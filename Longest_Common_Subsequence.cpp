@@ -20,9 +20,9 @@ typedef vector<pi> vpi;
 typedef long long ll;
 
 const int M = 1e9 + 7;
-const int N = 1000 + 1;
+const int N = 1000;
 
-int dp[N][N];
+int dp[N + 1][N + 1];
 
 #define foreach(i, n) for (int i = 0; i < n; i++)
 #define DEBUG 1
@@ -36,77 +36,60 @@ int main()
     int n1 = 0;
     int n2 = 0;
 
-    cin >> n1 >> n2;
+    cin >> n1;
+    cin >> n2;
+
     if (n1 < n2)
         swap(n1, n2);
-    vi i1(n1);
-    vi i2(n2);
+
+    vi s1(n1);
+    vi s2(n2);
 
     foreach (i, n1)
-        cin >> i1[i];
+        cin >> s1[i];
     foreach (i, n2)
-        cin >> i2[i];
+        cin >> s2[i];
 
-    int max_len = 0;
-
-    foreach (i, n1)
+    foreach (i, n1 + 1)
     {
-        foreach (j, n2)
+        foreach (j, n2 + 1)
         {
-            if (i1[i] != i2[j])
+            if (i == 0 || j == 0)
                 continue;
-            if (max_len == 0 && ++max_len)
-                dp[max_len][i] = 1;
-            else
-            {
-                int len = max_len;
-                bool found = false;
-
-                while (len > 0 && !found)
-                {
-                    for (int k = 0; k < n1 && !found; k++)
-                    {
-                        if (dp[len][k] != 0)
-                            continue;
-                        if (i > k)
-                        {
-#if DEBUG
-                            cout << "i:" << i << endl;
-#endif
-                            dp[len + 1][i] = 1;
-                            found = true;
-                            if (len == max_len)
-                                max_len++;
-                        }
-                        if (len == 1)
-                        {
-                            dp[1][i] = 1;
-                            found = true;
-                        }
-                        len--;
-                    }
-                }
-            }
+            int a, b, c;
+            a = dp[i - 1][j];
+            b = dp[i][j - 1];
+            c = dp[i - 1][j - 1] + (s1[i - 1] == s2[j - 1] ? 1 : 0);
+            dp[i][j] = max({a, b, c});
+            // if (s1[i - 1] == s2[j - 1])
+            //     dp[i][j] = 1 + dp[i - 1][j - 1];
+            // else
+            //     dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
         }
     }
 
+    cout << dp[n1][n2] << endl;
     vi ans;
-    int last = INT_MAX;
-    for (int i = max_len; i > 0; i--)
+    int len = 1;
+
+    while (n1 > 0 && n2 > 0)
     {
-        for (int j = n1 - 1; j >= 0; j--)
+        if (s1[n1 - 1] == s2[n2 - 1])
         {
-            if (dp[i][j] && last > j)
-            {
-                last = j;
-                ans.push_back(i1[j]);
-                break;
-            }
+            ans.push_back(s1[n1 - 1]);
+            n1--;
+            n2--;
         }
+        else if (dp[n1 - 1][n2] > dp[n1][n2 - 1]) // but why?
+        {
+            n1--;
+        }
+        else
+            n2--;
     }
 
-    cout << max_len << endl;
     reverse(ans.begin(), ans.end());
+
     for (auto i : ans)
         cout << i << " ";
     cout << endl;
