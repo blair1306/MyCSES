@@ -15,10 +15,26 @@ using namespace std;
 typedef vector<int> vi;
 typedef vector<vi> vvi;
 typedef pair<int, int> pii;
-typedef vector<pii> vpii;
 typedef long long ll;
+typedef pair<ll, ll> pll;
+typedef unsigned long long ull;
+typedef vector<ll> vll;
 
-const int M = 1e9 + 7;
+// Shortcuts
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+
+// Constants
+const int INF = 1e9 + 5;
+const ll LINF = 1e18;
+const int MOD = 1e9 + 7; // or 998244353
+const int N = 2e5 + 5;   // size for global arrays (if needed)
+
+// Debugging (remove for submission)
+#define DEBUG 0
+#define dbg(x) \
+    if (DEBUG) \
+        cerr << #x << " = " << x << endl;
 
 int main()
 {
