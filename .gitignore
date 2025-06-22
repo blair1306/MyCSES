@@ -1,0 +1,5 @@
+a.out*
+*.bin
+.cph
+.vscode
+.zed
