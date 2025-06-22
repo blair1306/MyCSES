@@ -64,28 +64,27 @@ int main()
 
                 while (len > 0 && !found)
                 {
-                    if (len == 1)
+                    for (int k = 0; k < n1 && !found; k++)
                     {
-                        dp[1][i] = 1;
-                        found = true;
-                    }
-                    else
-                    {
-                        for (int k = 0; k < n1 && !found && dp[len][k] != 0; k++)
+                        if (dp[len][k] != 0)
+                            continue;
+                        if (i > k)
                         {
-                            if (i > k)
-                            {
 #if DEBUG
-                                cout << "i:" << i << endl;
+                            cout << "i:" << i << endl;
 #endif
-                                dp[len + 1][i] = 1;
-                                found = true;
-                                if (len == max_len)
-                                    max_len++;
-                            }
+                            dp[len + 1][i] = 1;
+                            found = true;
+                            if (len == max_len)
+                                max_len++;
                         }
+                        if (len == 1)
+                        {
+                            dp[1][i] = 1;
+                            found = true;
+                        }
+                        len--;
                     }
-                    len--;
                 }
             }
         }
@@ -109,7 +108,7 @@ int main()
     cout << max_len << endl;
     reverse(ans.begin(), ans.end());
     for (auto i : ans)
-        cout << i;
+        cout << i << " ";
     cout << endl;
 
     return 0;
