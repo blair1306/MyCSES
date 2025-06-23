@@ -1,15 +1,20 @@
-#if defined(__APPLE__)
+#if defined(__linux__)
+// Linux code
+#include <bits/stdc++.h>
+#else
 #include <vector>
 #include <iostream>
 #include <climits>
 #include <algorithm>
-
-#elif defined(__linux__)
-// Linux code
-#include <bits/stdc++.h>
-#else
-
 #endif
+
+#ifdef LOCAL
+#include "mydebug.h"
+#else
+#define dbg(...)
+#define dbg_arr(...)
+#endif
+
 using namespace std;
 
 typedef vector<int> vi;
@@ -29,12 +34,6 @@ const int INF = 1e9 + 5;
 const ll LINF = 1e18;
 const int MOD = 1e9 + 7; // or 998244353
 const int N = 2e5 + 5;   // size for global arrays (if needed)
-
-// Debugging (remove for submission)
-#define DEBUG 0
-#define dbg(x) \
-    if (DEBUG) \
-        cerr << #x << " = " << x << endl;
 
 int main()
 {
