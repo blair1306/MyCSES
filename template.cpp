@@ -8,14 +8,6 @@
 #include <algorithm>
 #endif
 
-#define LOCAL
-#ifdef LOCAL
-#include "mydebug.h"
-#else
-#define dbg(...)
-#define dbg_arr(...)
-#endif
-
 using namespace std;
 
 typedef vector<int> vi;
@@ -29,6 +21,14 @@ typedef vector<ll> vll;
 // Shortcuts
 #define endl '\n'
 #define all(x) (x).begin(), (x).end()
+
+#define LOCAL
+#ifdef LOCAL
+#include "mydebug.h"
+#else
+#define dbg(...)
+#define dbg_arr(...)
+#endif
 
 // Constants
 const int INF = 1e9 + 5;
