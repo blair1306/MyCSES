@@ -8,6 +8,7 @@
 #include <algorithm>
 #endif
 
+#define LOCAL
 #ifdef LOCAL
 #include "mydebug.h"
 #else
@@ -33,7 +34,11 @@ typedef vector<ll> vll;
 const int INF = 1e9 + 5;
 const ll LINF = 1e18;
 const int MOD = 1e9 + 7; // or 998244353
+#ifdef LOCAL
+const int N = 10;   // size for global arrays (if needed)
+#else
 const int N = 2e5 + 5;   // size for global arrays (if needed)
+#endif
 
 int main()
 {
