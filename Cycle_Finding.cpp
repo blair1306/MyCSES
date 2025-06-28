@@ -41,7 +41,7 @@ const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
 using Edge = vector<tuple<int, int, ll>>;
-using Graph = vector<vector<int>>;
+using Graph = vector<vector<pair<int, ll>>>;
 
 int main()
 {
@@ -58,65 +58,47 @@ int main()
         ll c;
         cin >> a >> b >> c;
         E.push_back({a, b, c});
-        G[a].push_back(b);
+        G[a].push_back({b, c});
     }
 
-    vll dis(n + 1, LINF);
+    vll dis(n + 1, 0);  // set all distances to 0 to detect cycles even unreachable from 1;
+    vi parent(n + 1, 0);
     dis[1] = 0;
-    for (int i = 1; i < n; i++) {
+    int cycle_start = 0;
+    for (int i = 1; i <= n; i++) {  // n times to detect cycle
+        cycle_start = 0;
         for (auto &[u, v, w] : E) {
             if (dis[v] > dis[u] + w) {
+                parent[v] = u;
                 dis[v] = dis[u] + w;
+                cycle_start = u;
             }
         }
     }
 
-    // vi in_loop(n + 1, 0);
-    int loop_start = 0;
-    int loop_end = 0;
-    bool has_loop = false;
-    for (auto &[u, v, w] : E) {
-        if (dis[v] > dis[u] + w) {
-            has_loop = true;
-            loop_start = v;
-            loop_end = u;
-        }
-    }
+    dbg(cycle_start, parent, dis);
 
-    if (!has_loop) {
+    if (cycle_start == 0) {
         cout << "NO" << endl;
         return 0;
     }
 
-    // dfs
-    vi visited(n + 1, 0);
-    vi parent(n + 1, 0);
+    for (int i = 0; i < n; i++)
+        cycle_start = parent[cycle_start];  // this make sure cycle_start is in the cycle
 
-    queue<int> q;
-    q.push(loop_start);
-    while (!q.empty()) {
-        int u = q.front();
-        q.pop();
-        if (u == loop_end) break;
-        for (auto &v : G[u]) {
-            if (parent[v]) continue;
-            parent[v] = u;
-            q.push(v);
-        }
+    vi cycle;
+    unordered_set<int> s;
+    int tmp = cycle_start;
+    while (s.find(cycle_start) == s.end()) {
+        s.insert(cycle_start);
+        cycle.push_back(cycle_start);
+        cycle_start = parent[cycle_start];
     }
-    dbg(loop_start, loop_end, parent);
-
-    vi loop;
+    reverse(all(cycle));
     cout << "YES" << endl;
-    int tmp = loop_end;
-    while (loop_end != 0) {
-        loop.push_back(loop_end);
-        loop_end = parent[loop_end];
-    }
-    reverse(all(loop));
     cout << tmp << ' ';
-    for (auto u : loop) {
-        cout << u << ' ';
+    for (auto a : cycle) {
+        cout << a << ' ';
     }
     cout << endl;
 
