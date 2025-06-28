@@ -40,13 +40,34 @@ const int N = 10 + 1;  // size for global arrays (if needed)
 const int N = 1e5 + 1;  // size for global arrays (if needed)
 #endif
 
-struct Edge {
-    int u;
-    int v;
-    ll w;
-};
-ll dist[N];
-ll disc[N];
+using Edge = vector<tuple<int, int, ll>>;
+using Graph = vector<vector<tuple<int, ll>>>;
+
+vll dijkstra(int s, Graph& G, int n)
+{
+    vll dis(n + 1, LINF);
+    vi visited(n + 1, 0);
+
+    dis[s] = 0;
+    priority_queue<pair<ll, int>> pq;
+    pq.push({0, s});
+    while (!pq.empty()) {
+        auto [_, u] = pq.top();
+        pq.pop();
+        if (visited[u]) continue;
+        visited[u] = 1;
+        for (auto& [v, w] : G[u]) {
+            if (dis[v] > dis[u] + w) {
+                dis[v] = dis[u] + w;
+                pq.push({-dis[v], v});
+            }
+        }
+    }
+
+    dbg(dis);
+
+    return dis;
+}
 
 int main()
 {
@@ -54,40 +75,30 @@ int main()
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
 
-    vector<Edge> E;
-    int n, m;
     int i;
+    int n, m;
+    ll ans = LINF;
+
     cin >> n >> m;
+    Edge E;
+    Graph G(n + 1);
+    Graph rG(n + 1);
+
     for (i = 0; i < m; i++) {
         int a, b;
-        ll m;
-        cin >> a >> b >> m;
-        E.push_back({a, b, m});
+        ll c;
+        cin >> a >> b >> c;
+        E.push_back({a, b, c});
+        G[a].push_back({b, c});
+        rG[b].push_back({a, c});
     }
 
-    for (i = 1; i <= n; i++) {
-        dist[i] = LINF;
-    }
-    dist[1] = 0;
-    for (i = 1; i < n; i++)
-        for (auto [u, v, w] : E) {
-            if (dist[v] > dist[u] + w) {
-                dist[v] = dist[u] + w;
-            }
-        }
-    dbg(dist);
-    ll ans = LINF;
-    for (int i = 0; i < m; i++) {
-        for (int i = 1; i <= n; i++) disc[i] = dist[i];
-        for (int j = 0; j < m; j++) {
-            auto [u, v, w] = E[j];
-            if (i == j) w /= 2;
-            if (disc[v] > disc[u] + w) {
-                disc[v] = disc[u] + w;
-            }
-        }
-        dbg(disc);
-        ans = min(ans, disc[n]);
+    vll dis1 = dijkstra(1, G, n);
+    vll disn = dijkstra(n, rG, n);
+
+    for (auto& [u, v, w] : E) {
+        if (dis1[u] == LINF || disn[v] == LINF) continue;
+        ans = min(ans, dis1[u] + disn[v] + w / 2);
     }
 
     cout << ans << endl;
