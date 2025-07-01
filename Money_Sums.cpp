@@ -1,0 +1,91 @@
+#if defined(__linux__)
+// Linux code
+#include <bits/stdc++.h>
+#else
+#include <vector>
+#include <iostream>
+#include <climits>
+#include <algorithm>
+#endif
+
+using namespace std;
+
+typedef vector<int> vi;
+typedef vector<vi> vvi;
+typedef pair<int, int> pii;
+typedef long long ll;
+typedef pair<ll, ll> pll;
+typedef unsigned long long ull;
+typedef vector<ll> vll;
+
+// Shortcuts
+#define endl '\n'
+#define all(x) (x).begin(), (x).end()
+
+// #define LOCAL
+#ifdef LOCAL
+#include "mydebug.h"
+#else
+#define dbg(...)
+#define dbg_arr(...)
+#endif
+
+// Constants
+const int INF = 1e9 + 5;
+const ll LINF = 1e18;
+const int MOD = 1e9 + 7;  // or 998244353
+#ifdef LOCAL
+const int N = 21;  // size for global arrays (if needed)
+#else
+const int N = 100000;  // size for global arrays (if needed)
+#endif
+
+vi dp(N, -1);
+vi coin(100);
+int n;
+bool visited[N][100][100];
+
+void backtrack(int sum, int start, int cnt)
+{
+    if (start > n || cnt > n) return;
+    if (visited[sum][start][cnt]) return;
+    visited[sum][start][cnt] = 1;
+    int nsum;
+    // don't choose
+    backtrack(sum, start + 1, cnt);
+    // backtrack(sum, cnt);
+    nsum = sum + coin[start];
+    if (nsum > 0 && dp[nsum] == -1) {
+        dp[nsum] = 1;
+    }
+    backtrack(nsum, start + 1, cnt + 1);
+    dbg(dp);
+}
+
+int main()
+{
+    // Fast I/O
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(NULL);
+
+    cin >> n;
+
+    for (int i = 0; i < n; i++) {
+        cin >> coin[i];
+    }
+
+    backtrack(0, 0, 0);
+
+    int cnt = 0;
+    for (int i = 0; i < N; i++) {
+        if (dp[i] != -1) cnt++;
+    }
+    cout << cnt << endl;
+    for (int i = 0; i < N; i++) {
+        if (dp[i] != -1) cout << i << ' ';
+    }
+
+    cout << endl;
+
+    return 0;
+}
