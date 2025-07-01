@@ -37,30 +37,12 @@ const int MOD = 1e9 + 7;  // or 998244353
 #ifdef LOCAL
 const int N = 21;  // size for global arrays (if needed)
 #else
-const int N = 100000;  // size for global arrays (if needed)
+const int N = 100 * 1000 + 1;  // size for global arrays (if needed)
 #endif
 
 vi dp(N, -1);
 vi coin(100);
 int n;
-bool visited[N][100][100];
-
-void backtrack(int sum, int start, int cnt)
-{
-    if (start > n || cnt > n) return;
-    if (visited[sum][start][cnt]) return;
-    visited[sum][start][cnt] = 1;
-    int nsum;
-    // don't choose
-    backtrack(sum, start + 1, cnt);
-    // backtrack(sum, cnt);
-    nsum = sum + coin[start];
-    if (nsum > 0 && dp[nsum] == -1) {
-        dp[nsum] = 1;
-    }
-    backtrack(nsum, start + 1, cnt + 1);
-    dbg(dp);
-}
 
 int main()
 {
@@ -74,14 +56,26 @@ int main()
         cin >> coin[i];
     }
 
-    backtrack(0, 0, 0);
+    /*
+    You are updating [dp[j + coin[i]]](http://vscodecontentref/0) in the forward direction (j = 0 to
+    N-1). This causes you to use "freshly updated" values in the same iteration, which leads to
+    overcounting and incorrect results (i.e., using the same coin multiple times in one step).
+    */
+    dp[0] = 1;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < N; j++) {
+            if (dp[j] != -1) {
+                dp[j + coin[i]] = 1;
+            }
+        }
+    }
 
     int cnt = 0;
-    for (int i = 0; i < N; i++) {
+    for (int i = 1; i < N; i++) {
         if (dp[i] != -1) cnt++;
     }
     cout << cnt << endl;
-    for (int i = 0; i < N; i++) {
+    for (int i = 1; i < N; i++) {
         if (dp[i] != -1) cout << i << ' ';
     }
 
