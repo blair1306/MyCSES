@@ -40,10 +40,33 @@ const int N = 10;  // size for global arrays (if needed)
 const int N = 1e5 + 5;  // size for global arrays (if needed)
 #endif
 
-vector<pii> E;
+vi G[N];
 vi pre(N, 0);
-vi visited(N, 0);
-vi dist(N, 0);
+vi state(N, 0);
+vi cycle;
+
+bool dfs(int u)
+{
+    state[u] = 1;
+    for (auto v : G[u]) {
+        if (state[v] == 0) {
+            pre[v] = u;
+            if (dfs(v)) return true;
+        } else if (state[v] == 1) {
+            cycle.push_back(v);
+            for (int x = u; x != v; x = pre[x]) {
+                // since pre[v] = u so we start from u
+                cycle.push_back(x);
+            }
+            cycle.push_back(v);
+            reverse(cycle.begin(), cycle.end());
+            return true;
+        }
+    }
+
+    state[u] = 2;
+    return false;
+}
 
 int main()
 {
@@ -54,55 +77,28 @@ int main()
     int n, m;
     cin >> n >> m;
 
-    pre.resize(n + 1);
-    visited.resize(n + 1);
-
     for (int i = 0; i < m; i++) {
         int a, b;
         cin >> a >> b;
-        E.push_back({a, b});
+        G[a].push_back(b);
     }
 
-    bool hasLoop;
-    int loopStart = 0;
-    for (int i = 0; i < n; i++) {
-        hasLoop = false;
-        for (auto [u, v] : E) {
-            int nw = dist[u] - 1;
-            if (nw < dist[v]) {
-                pre[v] = u;
-                dist[v] = nw;
-                hasLoop = true;
-                loopStart = u;
-            }
-        }
+    bool hasCycle = false;
+    for (int i = 1; i <= n; i++) {
+        if (state[i] != 0) continue;
+        hasCycle = dfs(i);
+        if (hasCycle) break;
     }
 
-    dbg(pre);
-    dbg(dist);
-
-    if (!hasLoop) {
+    if (!hasCycle) {
         cout << "IMPOSSIBLE" << endl;
         return 0;
     }
 
-    for (int i = 0; i < n; i++) {
-        loopStart = pre[loopStart];
-    }
+    dbg(pre);
 
-    vi roundTrip;
-    roundTrip.push_back(loopStart);
-    while (loopStart != roundTrip[0] || roundTrip.size() < 2) {
-        loopStart = pre[loopStart];
-        roundTrip.push_back(loopStart);
-    }
-
-    reverse(roundTrip.begin(), roundTrip.end());
-    cout << roundTrip.size() << endl;
-    for (int u : roundTrip) {
-        cout << u << ' ';
-    }
+    cout << cycle.size() << endl;
+    for (int u : cycle) cout << u << ' ';
     cout << endl;
-
     return 0;
 }
