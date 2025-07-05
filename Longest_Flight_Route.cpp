@@ -46,15 +46,15 @@ vi dist(N, -INF);
 vi pre(N, 0);
 vi order;
 
-void typosort(int u)
+void toposort(int u)
 {
     if (state[u] != 0) return;
     state[u] = 1;
-    order.push_back(u);
     for (auto v : G[u]) {
         if (state[v] != 0) continue;
-        typosort(v);
+        toposort(v);
     }
+    order.push_back(u);
 }
 
 int main()
@@ -77,9 +77,10 @@ int main()
 
     for (int i = 1; i <= n; i++) {
         if (state[i] != 0) continue;
-        typosort(i);
+        toposort(i);
     }
 
+    reverse(all(order));
     dbg(order);
     dist[1] = 0;
 
