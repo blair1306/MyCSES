@@ -42,41 +42,19 @@ const int N = 1e5 + 5;  // size for global arrays (if needed)
 
 vi G[N];
 vi state(N, 0);
-vi dist(N, INF);
+vi dist(N, -INF);
 vi pre(N, 0);
+vi order;
 
-void dfs2(int u)
+void typosort(int u)
 {
-    for (auto v : G[u]) {
-        if (state[v] == 0 || state[v] == 1) continue;
-        if (dist[u] + 1 > dist[v]) {
-            dist[v] = dist[u] + 1;
-            dfs2(v);
-            pre[v] = u;
-        }
-    }
-}
-
-void dfs(int u)
-{
+    if (state[u] != 0) return;
     state[u] = 1;
-
+    order.push_back(u);
     for (auto v : G[u]) {
-        if (state[v] == 0) {
-            dist[v] = dist[u] + 1;
-            pre[v] = u;
-            dfs(v);
-        }
-        if (state[v] == 2) {
-            if (dist[u] + 1 > dist[v]) {
-                dist[v] = dist[u] + 1;
-                pre[v] = u;
-                dfs2(v);
-            }
-        }
+        if (state[v] != 0) continue;
+        typosort(v);
     }
-
-    state[u] = 2;
 }
 
 int main()
@@ -97,11 +75,26 @@ int main()
         G[a].push_back(b);
     }
 
+    for (int i = 1; i <= n; i++) {
+        if (state[i] != 0) continue;
+        typosort(i);
+    }
+
+    dbg(order);
     dist[1] = 0;
 
-    dfs(1);
+    for (auto u : order) {
+        if (dist[u] == -INF) continue;
+        for (auto v : G[u]) {
+            if (dist[u] + 1 > dist[v]) {
+                dist[v] = dist[u] + 1;
+                pre[v] = u;
+            }
+        }
+    }
+    dbg(pre);
 
-    if (dist[n] == INF) {
+    if (dist[n] == -INF) {
         cout << "IMPOSSIBLE" << endl;
         return 0;
     }
