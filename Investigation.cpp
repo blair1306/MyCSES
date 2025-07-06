@@ -35,7 +35,7 @@ const int INF = 1e9 + 5;
 const ll LINF = 1e18;
 const int MOD = 1e9 + 7;  // or 998244353
 #ifdef LOCAL
-const int N = 10;  // size for global arrays (if needed)
+const int N = 10 + 1;  // size for global arrays (if needed)
 #else
 const int N = 1e5 + 1;  // size for global arrays (if needed)
 #endif
@@ -46,8 +46,29 @@ vll d(N, LINF);
 vi pre[N];
 int n;
 vll dp(N, 0);
+vi visited(N, 0);
 vi dp1(N, INF);
 vi dp2(N, 0);
+
+int min_d = INF;
+int max_d = 0;
+
+void dfs(int u, int depth)
+{
+    if (u == 1) {
+        min_d = min(min_d, depth);
+        max_d = max(max_d, depth);
+    }
+    if (visited[u]) return;
+    visited[u] = 1;
+    // dp1[u] = 1;
+    // dp2[u] = 1;
+
+    for (auto v : pre[u]) {
+        dfs(v, depth + 1);
+        dp[u] += dp[v];
+    }
+}
 
 int main()
 {
@@ -75,7 +96,7 @@ int main()
         if (d[u] < tmp) continue;
 
         for (auto [w, v] : wG[u]) {
-            int nw = d[u] + w;
+            ll nw = d[u] + w;
             if (nw <= d[v]) {
                 if (nw < d[v]) {
                     pre[v].clear();
@@ -88,14 +109,31 @@ int main()
     }
 
     dp[1] = 1;
-    dp1[1] = 0;
-    dp2[1] = 0;
+    dfs(n, 0);
+    dbg(dp, min_d, max_d);
+
+    cout << d[n] << ' ' << dp[n] << ' ' << min_d << ' ' << max_d << endl;
+    return 0;
+
+    dp[1] = 1;
+    dp1[1] = 1;
+    dp2[1] = 1;
     for (int u = 1; u <= n; u++) {
+        if (pre[u].size() == 0) continue;
+        int max_pd = 0, min_pd = INF;
         for (auto v : pre[u]) {
-            dp[u] = (dp[u] + dp[v]) % MOD;
-            dp1[u] = min(dp1[u], dp1[v] + 1);
-            dp2[u] = max(dp2[u], dp2[v] + 1);
+            if (pre[u].size() == 1) {
+                dp[u] = dp[v];
+                dp1[u] = dp1[v];
+                dp2[u] = dp2[v];
+            } else {
+                dp[u] = (dp[u] + dp[v]) % MOD;
+                min_pd = min(min_pd, dp1[v]);
+                max_pd = max(max_pd, dp2[v]);
+            }
         }
+        dp1[u] = min(dp1[u], min_pd + 1);
+        dp2[u] = max(dp2[u], max_pd + 1);
     }
 
     dbg(d);
