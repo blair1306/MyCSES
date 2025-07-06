@@ -46,7 +46,6 @@ vll d(N, LINF);
 vi pre[N];
 int n;
 vll dp(N, 0);
-vi visited(N, 0);
 vi dp1(N, INF);
 vi dp2(N, 0);
 vi state(N, 0);
@@ -112,7 +111,8 @@ int main()
     dbg(order);
     for (int u : order) {
         for (auto [w, v] : wG[u]) {
-            if (d[u] + w == d[v]) {  // is in shortest path
+            // if (d[u] + w == d[v]) {  // is in shortest path
+            {
                 dp[v] = (dp[v] + dp[u]) % MOD;
                 dp1[v] = min(dp1[v], dp1[u] + 1);
                 dp2[v] = max(dp2[v], dp2[u] + 1);
