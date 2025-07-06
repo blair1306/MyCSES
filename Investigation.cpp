@@ -49,25 +49,21 @@ vll dp(N, 0);
 vi visited(N, 0);
 vi dp1(N, INF);
 vi dp2(N, 0);
+vi state(N, 0);
+vi order;
 
 int min_d = INF;
 int max_d = 0;
 
-void dfs(int u, int depth)
+void dfs(int u)
 {
-    if (u == 1) {
-        min_d = min(min_d, depth);
-        max_d = max(max_d, depth);
-    }
-    if (visited[u]) return;
-    visited[u] = 1;
-    // dp1[u] = 1;
-    // dp2[u] = 1;
-
+    state[u] = 1;
     for (auto v : pre[u]) {
-        dfs(v, depth + 1);
-        dp[u] += dp[v];
+        if (state[v] == 0) {
+            dfs(v);
+        }
     }
+    order.push_back(u);
 }
 
 int main()
@@ -109,43 +105,23 @@ int main()
     }
 
     dp[1] = 1;
-    dfs(n, 0);
-    dbg(dp, min_d, max_d);
-
-    cout << d[n] << ' ' << dp[n] << ' ' << min_d << ' ' << max_d << endl;
-    return 0;
-
-    dp[1] = 1;
-    dp1[1] = 1;
-    dp2[1] = 1;
-    for (int u = 1; u <= n; u++) {
-        if (pre[u].size() == 0) continue;
-        int max_pd = 0, min_pd = INF;
-        for (auto v : pre[u]) {
-            if (pre[u].size() == 1) {
-                dp[u] = dp[v];
-                dp1[u] = dp1[v];
-                dp2[u] = dp2[v];
-            } else {
-                dp[u] = (dp[u] + dp[v]) % MOD;
-                min_pd = min(min_pd, dp1[v]);
-                max_pd = max(max_pd, dp2[v]);
+    dp1[1] = 0;
+    dp2[1] = 0;
+    dfs(n);
+    // we don't need to reverse order because it's already reversed
+    dbg(order);
+    for (int u : order) {
+        for (auto [w, v] : wG[u]) {
+            if (d[u] + w == d[v]) {  // is in shortest path
+                dp[v] = (dp[v] + dp[u]) % MOD;
+                dp1[v] = min(dp1[v], dp1[u] + 1);
+                dp2[v] = max(dp2[v], dp2[u] + 1);
             }
         }
-        dp1[u] = min(dp1[u], min_pd + 1);
-        dp2[u] = max(dp2[u], max_pd + 1);
     }
 
-    dbg(d);
-    dbg(pre);
-    dbg(dp);
-    dbg(dp1);
-    dbg(dp2);
+    dbg(dp, dp1, dp2);
 
-    cout << d[n] << ' ';
-    cout << dp[n] << ' ';
-    cout << dp1[n] << ' ';
-    cout << dp2[n] << ' ';
-
+    cout << d[n] << ' ' << dp[n] << ' ' << dp1[n] << ' ' << dp2[n] << endl;
     return 0;
 }
