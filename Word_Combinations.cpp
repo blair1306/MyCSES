@@ -37,10 +37,12 @@ const int MOD = 1e9 + 7;  // or 998244353
 #ifdef LOCAL
 const int N = 10;  // size for global arrays (if needed)
 #else
-const int N = 2e5 + 5;  // size for global arrays (if needed)
+const int N = 1e7 + 5;  // size for global arrays (if needed)
 #endif
 
-int visited[N];
+int trie[N][26];    // there'are 26 letters dumb ass! not 24;
+int isLeaf[N];
+int cnt = 0;
 
 int main()
 {
@@ -52,31 +54,35 @@ int main()
     cin >> p;
     int k;
 
-    unordered_set<string> dict;
     cin >> k;
-    int max_len = -1;
     for (int i = 0; i < k; i++) {
         string word;
         cin >> word;
-        max_len = max(max_len, (int)word.length());
-        dict.insert(word);
-        if (word.length() <= p.length()) visited[word.length()] = 1;
+        int cur = 0;
+        for (auto c : word) {
+            uint num = c - 'a';
+            if (!trie[cur][num]) {
+                trie[cur][num] = ++cnt;
+            }
+            cur = trie[cur][num];
+        }
+        isLeaf[cur] = 1;
     }
+
+    dbg(cnt, trie);
+    dbg(isLeaf);
 
     vi dp(p.size() + 1, 0);
     dp[0] = 1;
 
-    for (int i = 1; i <= p.size(); i++) {
-        for (int len = 1; len <= i; len++) {
-            int pos = i - len;
-            if (dp[pos] == 0) continue;
-            if (!visited[len]) continue;
-            if (len > max_len) break;
-            string sub = p.substr(pos, len);
-            dbg(sub);
-            if (dict.count(sub)) {
-                dp[i] = (dp[i] + dp[pos]) % MOD;
-            }
+    for (uint i = 0; i < p.size(); i++) {
+        if (dp[i] == 0) continue;
+        int cur = 0;
+        for (uint j = i; j < p.size(); j++) {
+            int c = p[j] - 'a';
+            if (!trie[cur][c]) break;
+            cur = trie[cur][c];
+            if (isLeaf[cur]) dp[j + 1] = (dp[i] + dp[j + 1]) % MOD;
         }
     }
 
