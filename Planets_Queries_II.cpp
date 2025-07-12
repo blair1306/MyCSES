@@ -116,6 +116,12 @@ int binary_lift(int u, int d)
     return v;
 }
 
+int cycle_dis(int a, int b)
+{
+    int sz = cycle_size[comp[a]];
+    return (cycle_id[b] - cycle_id[a] + sz) % sz;
+}
+
 int main()
 {
     // Fast I/O
@@ -152,15 +158,12 @@ int main()
         }
     }
 
-    dbg(comp);
-
     dbg(nxt);
 
     while (q--) {
         int a, b;
         cin >> a >> b;
         int ans = 0;
-        int component = 0;
         if (a == b) {
             cout << 0 << endl;
             continue;
@@ -169,18 +172,13 @@ int main()
             cout << -1 << endl;
             continue;
         }
-        component = comp[a];
-
         if (in_cycle[a] && in_cycle[b]) {
-            if (cycle_id[b] > cycle_id[a]) {
-                ans = cycle_id[b] - cycle_id[a];
-            } else {
-                ans = cycle_size[component] - cycle_id[a] + cycle_id[b];
-            }
+            ans = cycle_dis(a, b);
         } else if (in_cycle[a] && !in_cycle[b]) {
             ans = -1;
         } else if (in_cycle[b] && !in_cycle[a]) {
-            ans = dis[a] + cycle_id[b];
+            int cycle_entry = binary_lift(a, dis[a]);
+            ans = cycle_dis(cycle_entry, b) + dis[a];
         } else {
             if (dis[b] > dis[a]) {
                 ans = -1;
