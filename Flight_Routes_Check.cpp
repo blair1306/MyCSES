@@ -46,6 +46,7 @@ stack<int> s;
 vi G[N];
 vi rG[N];
 vi vis(N);
+vi scc[N];
 
 void dfs(int u)
 {
@@ -64,9 +65,10 @@ void dfs2(int u)
     if (vis[u]) return;
     vis[u] = 1;
     comp[u] = comp_id;
+    scc[comp_id].push_back(u);
 
     for (auto v : rG[u]) {
-        dfs(v);
+        dfs2(v);
     }
 }
 
@@ -92,8 +94,6 @@ int main()
         dfs(i);
     }
 
-    s.push(5);
-
     dbg(s);
 
     fill(all(vis), 0);
@@ -101,25 +101,32 @@ int main()
         int u = s.top();
         s.pop();
         if (vis[u]) continue;
-        comp_id++;
         dfs2(u);
+        comp_id++;
     }
 
     dbg(comp);
 
-    int u = 1, v = -1;
-    for (int i = 2; i <= n; i++) {
-        if (comp[u] != comp[i]) {
-            v = i;
-            break;
-        }
-    }
+    // int u = n, v = -1;
+    // for (int i = n - 1; i > 0; i--) {
+    //     if (comp[u] != comp[i]) {
+    //         v = i;
+    //         break;
+    //     }
+    // }
 
-    if (n > 1 && v != -1) {
-        cout << "NO" << endl;
-        cout << u << ' ' << v << endl;
-    } else {
+    // if (n > 1 && v != -1) {
+    //     cout << "NO" << endl;
+    //     cout << v << ' ' << u << endl;
+    // } else {
+    //     cout << "YES" << endl;
+    // }
+
+    if (comp_id == 1) {
         cout << "YES" << endl;
+    } else {
+        cout << "NO" << endl;
+        cout << scc[0][0] << ' ' << scc[1][0];
     }
 
     return 0;
