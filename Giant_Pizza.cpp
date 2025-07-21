@@ -40,6 +40,9 @@ const int N = 12;  // size for global arrays (if needed)
 const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
+#define var(x) (2 * x - 1);
+#define neg(x) (((2 * x) ^ 1) - 1)
+
 vi G[N];
 bool vis[N];
 bool on_stack[N];
@@ -47,6 +50,7 @@ vi low_link(N, -1);
 vi dfs_num(N, -1);
 int idx = 1;
 vvi dag;
+vi scc_id(N, -1);
 stack<int> S;
 
 void dfs(int u)
@@ -71,6 +75,7 @@ void dfs(int u)
             S.pop();
             on_stack[v] = false;
             scc.push_back(v);
+            scc_id[v] = dag.size();
             if (v == u) break;
         }
         dag.push_back(scc);
@@ -94,48 +99,27 @@ int main()
     cin >> n >> m;
 
     while (n--) {
-        bool neg1, neg2;
-        int x1, nx1, x2, nx2;
-        char neg;
-        cin >> neg;
-        if (neg == '+')
-            neg1 = false;
-        else
-            neg1 = true;
-        cin >> x1;
-        cin >> neg;
-        if (neg == '+')
-            neg2 = false;
-        else
-            neg2 = true;
-        cin >> x2;
-        x1 = 2 * x1 - 1;
-        if (neg1) {
-            nx1 = x1;
-            x1++;
-        } else {
-            nx1 = x1 + 1;
-        }
-        x2 = 2 * x2 - 1;
-        if (neg2) {
-            nx2 = x2;
-            x2++;
-        } else
-            nx2 = x2 + 1;
-        // x1 -> not x2
-        G[x1].push_back(nx2);
-        dbg(x1, "->", nx2);
-        // x2 -> not x1
-        dbg(x2, "->", nx1);
-        G[x2].push_back(nx1);
+        char neg1, neg2;
+        int x1, x2;
+        cin >> neg1 >> x1 >> neg2 >> x2;
+        int u = 2 * x1 - (neg1 == '+' ? 1 : 0);
+        int nu = 2 * x1 - (neg1 == '+' ? 0 : 1);
+        int v = 2 * x2 - (neg2 == '+' ? 1 : 0);
+        int nv = 2 * x2 - (neg2 == '+' ? 0 : 1);
+        dbg(u, "->", nv);
+        G[u].push_back(nv);  // u → ¬v
+        dbg(v, "->", nu);
+        G[v].push_back(nu);  // v → ¬u
     }
 
     tarjan(m);
+    reverse(all(dag));
     dbg(dag);
     dbg(dfs_num);
     dbg(low_link);
+    dbg(scc_id);
     for (int i = 1; i <= 2 * m; i += 2) {
-        if (low_link[i] == low_link[i + 1]) {
+        if (scc_id[i] == scc_id[i + 1]) {
             cout << "IMPOSSIBLE" << endl;
             return 0;
         }
@@ -143,17 +127,17 @@ int main()
 
     vi val(m * 2 + 2, -1);
     for (auto scc : dag) {
-        int b = 1;
         for (auto u : scc) {
-            if ((u % 2 == 0) && val[u] != -1) {
-                b = !val[u];
-                break;
-            }
-        }
-        for (auto u : scc) {
-            val[u] = b;
+            if (val[u] != -1) continue;
+            val[u] = 1;
+            if (u % 2 == 0)
+                val[u + 1] = 0;
+            else
+                val[u - 1] = 0;
         }
     }
+
+    dbg(val);
 
     for (int i = 1; i <= 2 * m; i += 2) {
         if (val[i])
