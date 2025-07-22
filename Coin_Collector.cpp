@@ -41,7 +41,8 @@ const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
 int n;
-vi coin(N);
+vll coin(N);
+vll scc_coin(N);
 vi G[N], cG[N];  // cG for condensed Graph
 vi cId(N);
 vi vis(N);
@@ -90,8 +91,20 @@ void dfs(int u)
         for (auto v : scc) {
             scc_id[v] = scc_cnt;
         }
-        dp[scc_cnt] = scc_sum;
+        scc_coin[scc_cnt] = scc_sum;
     }
+}
+
+ll dfs1(int u)
+{
+    if (dp[u]) return dp[u];
+    ll maxChild = 0;
+    for (auto v : cG[u]) {
+        maxChild = max(maxChild, dfs1(v));
+    }
+
+    dp[u] = scc_coin[u] + maxChild;
+    return dp[u];
 }
 
 void tarjan()
@@ -136,12 +149,8 @@ int main()
 
     fill(all(vis), 0);
 
-    for (int u = scc_cnt; u > 0; u--) {
-        ll maxChild = 0;
-        for (auto v : cG[u]) {
-            maxChild = max(maxChild, dp[v]);
-        }
-        dp[u] += maxChild;
+    for (int u = 1; u <= scc_cnt; u++) {
+        dfs1(u);
     }
     dbg(dp);
     ll ans = 0;
