@@ -35,12 +35,12 @@ const int INF = 1e9 + 5;
 const ll LINF = 1e18;
 const int MOD = 1e9 + 7;  // or 998244353
 #ifdef LOCAL
-const int N = 12;  // size for global arrays (if needed)
+const int N = 55;  // size for global arrays (if needed)
 #else
 const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
-#define var(x) (2 * x - 1);
+#define var(x) (2 * x - 1)
 #define neg(x) (((2 * x) ^ 1) - 1)
 
 vi G[N];
@@ -125,15 +125,22 @@ int main()
         }
     }
 
-    vi val(m * 2 + 2, -1);
+    vi val(2 * m + 1, -1);
     for (auto scc : dag) {
+        bool assigned = false;
         for (auto u : scc) {
-            if (val[u] != -1) continue;
+            if (val[u] != -1) {
+                assigned = true;
+                break;
+            }
+        }
+        if (assigned) continue;     // buy why???
+        for (auto u : scc) {
             val[u] = 1;
             if (u % 2 == 0)
-                val[u + 1] = 0;
-            else
                 val[u - 1] = 0;
+            else
+                val[u + 1] = 0;
         }
     }
 
@@ -146,5 +153,6 @@ int main()
             cout << "-";
         cout << " ";
     }
+    cout << endl;
     return 0;
 }
