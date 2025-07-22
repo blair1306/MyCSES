@@ -42,7 +42,8 @@ const int N = 2e5 + 5;  // size for global arrays (if needed)
 
 int n;
 vi coin(N);
-vi G[N];
+vi G[N], cG[N];  // cG for condensed Graph
+vi cId(N);
 vi vis(N);
 vi dfsNum(N);
 int cnt = 1;
@@ -50,10 +51,12 @@ vi low(N);
 stack<int> S;
 vi on_stack(N);
 vi in_scc(N);
-vi dp(N);
+vll dp(N);
 vi parent(N);
 
 vvi comp;
+vi scc_id(N);
+int scc_cnt = 0;
 
 void dfs(int u)
 {
@@ -64,15 +67,15 @@ void dfs(int u)
     for (auto v : G[u]) {
         if (!vis[v]) {
             dfs(v);
-            dfsNum[u] = min(dfsNum[u], dfsNum[v]);
-        } else {
-            dfsNum[u] = min(dfsNum[u], low[v]);
+            low[u] = min(low[u], low[v]);
+        } else if (on_stack[v]) {  //
+            low[u] = min(low[u], dfsNum[v]);
         }
     }
 
     if (dfsNum[u] == low[u]) {
         vi scc;
-        int scc_sum = 0;
+        ll scc_sum = 0;
         while (S.size()) {
             int v = S.top();
             S.pop();
@@ -83,12 +86,11 @@ void dfs(int u)
         }
 
         comp.push_back(scc);
-        if (scc.size() > 1) {
-            for (auto a : scc) {
-                in_scc[a] = 1;
-                dp[a] = scc_sum;
-            }
+        scc_cnt++;
+        for (auto v : scc) {
+            scc_id[v] = scc_cnt;
         }
+        dp[scc_cnt] = scc_sum;
     }
 }
 
@@ -97,28 +99,6 @@ void tarjan()
     for (int i = 1; i <= n; i++) {
         if (!vis[i]) dfs(i);
     }
-}
-
-void dfs1(int u, int p)
-{
-    vis[u] = 1;
-    if (p) dp[u] += dp[p];
-    for (auto v : G[u]) {
-        if (!vis[v]) dfs1(v, u);
-    }
-}
-
-int dfs2(int u)
-{
-    if (dp[u]) return dp[u];
-    if (G[u].size() == 0) return coin[u];
-    int maxChild = 0;
-    for (auto v : G[u]) {
-        if (!vis[v]) dfs(v);
-        maxChild = max(maxChild, dp[v]);
-    }
-    dp[u] = maxChild + coin[u];
-    return dp[u];
 }
 
 int main()
@@ -143,31 +123,28 @@ int main()
 
     tarjan();
     dbg(comp);
+    dbg(scc_id);
+
+    for (int u = 1; u <= n; u++) {
+        for (auto v : G[u]) {
+            if (scc_id[u] == scc_id[v]) continue;
+            cG[scc_id[u]].push_back(scc_id[v]);
+        }
+    }
+
+    dbg(cG);
 
     fill(all(vis), 0);
-    for (int i = 1; i <= n; i++) {
-        if (in_scc[i]) {
-            vis[i] = 1;
-        }
-    }
 
-    for (auto scc : comp) {
-        if (scc.size() == 1) continue;
-        for (auto u : scc) {
-            for (auto v : G[u]) {
-                if (!vis[v]) dfs1(v, u);
-            }
+    for (int u = scc_cnt; u > 0; u--) {
+        ll maxChild = 0;
+        for (auto v : cG[u]) {
+            maxChild = max(maxChild, dp[v]);
         }
+        dp[u] += maxChild;
     }
-
-    for (int i = 1; i <= n; i++) {
-        if (!dp[i]) {
-            dfs2(i);
-        }
-    }
-
     dbg(dp);
-    int ans = 0;
+    ll ans = 0;
     for (auto i : dp) ans = max(i, ans);
 
     cout << ans << endl;
