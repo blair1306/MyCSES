@@ -75,8 +75,8 @@ int main()
     for (int i = 1; i <= m; i++) {
         int a, b;
         cin >> a >> b;
-        G[a].push_back({b, m});
-        G[b].push_back({a, m});
+        G[a].push_back({b, i});
+        G[b].push_back({a, i});
         degree[a]++;
         degree[b]++;
     }
@@ -88,7 +88,15 @@ int main()
         }
     }
 
+    dbg(vis);
     dfs(1);
+    dbg(vis);
+    dbg(G);
+
+    if (eulerTour.size() != m + 1) {
+        cout << "IMPOSSIBLE" << endl;  // but why? isnt' the above parity test sufficient?
+        return 0;
+    }
 
     for (auto a : eulerTour) {
         cout << a << ' ';
