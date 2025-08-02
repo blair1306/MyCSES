@@ -40,7 +40,7 @@ const int N = 10;  // size for global arrays (if needed)
 const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
-const int BOARD_LEN = 6;
+const int BOARD_LEN = 8;
 const int BOARD_SIZE = BOARD_LEN * BOARD_LEN;
 
 struct Point {
@@ -56,20 +56,27 @@ int board[BOARD_LEN][BOARD_LEN];
 using pip = pair<int, Point>;
 using vpip = vector<pip>;
 
-vpip getAvailableMoves(Point u, int depth = 1)
+#define valid(x, y) (((x) >= 0) && ((y) >= 0) && ((x) < 8) && ((y) < 8))
+
+int getNumOfMoves(Point u)
+{
+    int numOfMoves = 0;
+    for (auto [dx, dy] : dirs) {
+        if (valid(u.x + dx, u.y + dy)) numOfMoves++;
+    }
+    return numOfMoves;
+}
+
+vpip getAvailableMoves(Point u)
 {
     vpip moves;
     vpip tmp;
     for (auto [dx, dy] : dirs) {
         int numNextMove = 0;
         Point v = Point(u.x + dx, u.y + dy);
-        if (v.x < 0 || v.y < 0) continue;
-        if (v.x >= BOARD_LEN || v.y >= BOARD_LEN) continue;
+        if (!valid(v.x, v.y)) continue;
         if (board[v.x][v.y] != 0) continue;
-        if (depth) {
-            tmp = getAvailableMoves(v, depth - 1);
-            numNextMove = tmp.size();
-        }
+        numNextMove = getNumOfMoves(v);
         moves.push_back({numNextMove, v});
     }
 
@@ -81,9 +88,15 @@ vpip getAvailableMoves(Point u, int depth = 1)
     return moves;
 }
 
+bool done = false;
+
 bool dfs(Point u, int cnt)
 {
-    if (cnt > BOARD_SIZE) return true;
+    if (done) return true;
+    if (cnt > BOARD_SIZE) {
+        done = true;
+        return true;
+    }
     for (auto [s, v] : getAvailableMoves(u)) {
         board[v.x][v.y] = cnt;
         if (dfs(v, cnt + 1)) return true;
