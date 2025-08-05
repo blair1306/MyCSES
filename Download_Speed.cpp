@@ -43,37 +43,32 @@ const int N = 500 + 5;  // size for global arrays (if needed)
 vi graph[N];
 ll capacity[N][N];
 vi parent(N);
-vi vis(N);
 int n;
 
 bool reachable()
 {
     fill(all(parent), 0);
-    fill(all(vis), 0);
     queue<int> q;
     q.push(1);
-    vis[1] = 1;
     // bfs
     while (q.size()) {
         int u = q.front();
         q.pop();
         for (auto v : graph[u]) {
-            if (vis[v] || capacity[u][v] <= 0) continue;
-            vis[v] = 1;
+            if (parent[v] || capacity[u][v] <= 0) continue;
             q.push(v);
             parent[v] = u;
-            if (v == n) return true;
         }
     }
 
-    return false;
+    return parent[n];
 }
 
 ll maxFlow()
 {
     ll ans = 0;
-    ll currFlow = LINF;
     while (reachable()) {
+        ll currFlow = LINF;
         dbg(parent);
         int v, u = n;
         while (u != 1) {
@@ -113,6 +108,18 @@ int main()
         ll c;
         cin >> a >> b >> c;
         graph[a].push_back(b);
+        /*
+        For any edge u → v, the residual capacity is:
+
+        capacity[u][v] - flow[u][v]
+
+        But we also define a reverse edge v → u, whose residual capacity is:
+
+        flow[u][v]
+
+        This reverse edge allows the algorithm to send flow backward to adjust a previously chosen
+        path.*/
+        graph[b].push_back(a);
         capacity[a][b] += c;
     }
 
