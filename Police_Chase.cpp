@@ -108,6 +108,7 @@ int main()
         g[a].push_back(b);
         g[b].push_back(a);
         cap[a][b] = 1;
+        cap[b][a] = 1;
     }
 
     maxFlow = edmondsKarp();
