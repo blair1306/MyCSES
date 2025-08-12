@@ -40,46 +40,85 @@ const int N = 10;  // size for global arrays (if needed)
 const int N = 500 + 5;  // size for global arrays (if needed)
 #endif
 
-int n;
+int n, m;
+struct Edge {
+    int v, f, c;  // dest, flow, cap
+};
 
 vi g[N];
-int cap[N][N];
-int flow[N][N];
-vi parent(N);
+vector<Edge> edgs;
+vi lev(N);
+vector<uint> ptr(N);
+vi route;
 
-int bfs()
+void addEdge(int u, int v)
 {
-    parent.assign(N, 0);
+    g[u].push_back(edgs.size());
+    edgs.push_back({v, 0, 1});
+    g[v].push_back(edgs.size());
+    edgs.push_back({u, 0, 0});
+}
+
+bool bfs()
+{
+    fill(all(lev), -1);
     queue<int> q;
     q.push(1);
+    lev[1] = 0;
     while (q.size()) {
         int u = q.front();
         q.pop();
-        for (int v : g[u]) {
-            if (parent[v] || flow[u][v] <= 0) continue;
-            parent[v] = u;
+        for (int eid : g[u]) {
+            auto [v, f, c] = edgs[eid];
+            if (lev[v] != -1 || c - f <= 0) continue;
+            lev[v] = lev[u] + 1;
             q.push(v);
         }
     }
 
-    return parent[n];
+    return lev[n] != -1;
 }
 
-int edmondsKarp()
+bool dfs(int u)
 {
-    int maxFlow = 0;
-    while (bfs()) {
-        int u = n, v;
-        while (u != 1) {
-            v = u;
-            u = parent[u];
-            flow[u][v] -= 1;
-            flow[v][u] += 1;
+    if (u == n) return true;
+    while (ptr[u] < g[u].size()) {
+        int eid = g[u][ptr[u]++];
+        auto [v, f, c] = edgs[eid];
+        if (lev[v] == lev[u] + 1 && c - f > 0 && dfs(v)) {
+            edgs[eid].f++;
+            edgs[eid ^ 1].f--;
+            return true;
         }
-        maxFlow++;
+    }
+    return false;
+}
+
+void trace(int u)
+{
+    route.push_back(u);
+    if (u == n) return;
+
+    while (ptr[u] < g[u].size()) {
+        int eid = g[u][ptr[u]++];
+        auto [v, f, c] = edgs[eid];
+        if (f > 0) {
+            edgs[eid].f--;
+            trace(v);
+            return;
+        }
+    }
+}
+
+int dinic()
+{
+    int k = 0;
+    while (bfs()) {
+        fill(all(ptr), 0);
+        while (dfs(1)) k++;
     }
 
-    return maxFlow;
+    return k;
 }
 
 int main()
@@ -88,36 +127,21 @@ int main()
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
 
-    int m;
     cin >> n >> m;
-    while (m--) {
-        int a, b;
-        cin >> a >> b;
-        g[a].push_back(b);
-        g[b].push_back(a);
-        cap[a][b] = 1;
-        flow[a][b] = 1;
+    for (int u, v; m--;) {
+        cin >> u >> v;
+        addEdge(u, v);
     }
 
-    int days = edmondsKarp();
-    cout << days << endl;
+    int ways = dinic();
+    cout << ways << endl;
+    fill(all(ptr), 0);
 
-    for (int u : g[1]) {
-        if (flow[1][u] > 0 || cap[1][u] <= 0) continue;
-        vi aug;
-        aug.push_back(1);
-        aug.push_back(u);
-        int back = aug.back();
-        while (back != n) {
-            for (int v : g[back]) {
-                if (flow[back][v] > 0 || cap[back][v] <= 0) continue;
-                aug.push_back(v);
-                back = v;
-                break;
-            }
-        }
-        cout << aug.size() << endl;
-        for (int i : aug) cout << i << " ";
+    while (ways--) {
+        route.clear();
+        trace(1);
+        cout << route.size() << endl;
+        for (int a : route) cout << a << " ";
         cout << endl;
     }
 
