@@ -50,7 +50,7 @@ struct RMQ {
         assert(tour.size());
         n = 1;
         while (n <= tour.size()) n *= 2;
-        segtree.resize(n);
+        segtree.resize(2 * n);
         for (uint i = 0; i < tour.size(); i++) {
             segtree[i + n] = tour[i];
         }
@@ -66,8 +66,7 @@ struct RMQ {
         left += n;
         right += n;
         while (left <= right) {
-            dbg(left, right)
-            if ((left & 1)) res = min(res, segtree[left++]);
+            dbg(left, right) if ((left & 1)) res = min(res, segtree[left++]);
             if (!(right & 1)) res = min(res, segtree[right--]);
             left >>= 1;
             right >>= 1;
