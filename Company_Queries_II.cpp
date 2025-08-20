@@ -40,57 +40,52 @@ const int N = 10;  // size for global arrays (if needed)
 const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
-struct edge {
-    int v, eid;
+using ETour = vector<pii>;  // depth, node
+
+struct RMQ {
+    ETour segtree;
+    uint n;
+    RMQ(ETour& tour)
+    {
+        assert(tour.size());
+        n = 1;
+        while (n <= tour.size()) n *= 2;
+        segtree.resize(n);
+        for (uint i = 0; i < tour.size(); i++) {
+            segtree[i + n] = tour[i];
+        }
+        for (int i = n - 1; i > 0; i--) {
+            segtree[i] = min(segtree[i << 1], segtree[i << 1 | 1]);
+        }
+        dbg(segtree);
+    }
+
+    int query(int left, int right)  // [left, right]
+    {
+        pii res = {INF, INF};  // {depth, node}
+        left += n;
+        right += n;
+        while (left <= right) {
+            dbg(left, right)
+            if ((left & 1)) res = min(res, segtree[left++]);
+            if (!(right & 1)) res = min(res, segtree[right--]);
+            left >>= 1;
+            right >>= 1;
+        }
+        return res.second;
+    }
 };
 
-vector<edge> tree[N];
-vi node_id;
-vi node_depth;
-vi id_map(N, -1);
-vi vis(2 * N);
-vi segtree;
+vi e_tree[N];
+ETour tour;
 
-void addEdge(int u, int v)
+void dfs(int u, int d)
 {
-    static int _id = 0;
-    tree[u].push_back({v, _id++});
-}
-
-void dfs(int u, int depth)
-{
-    vis[u] = 1;
-    if (id_map[u] == -1) id_map[u] = node_id.size();
-    node_id.push_back(u);
-    node_depth.push_back(depth);
-    for (auto [v, eid] : tree[u]) {
-        if (vis[v]) continue;
-        vis[v] = 1;
-        dfs(v, depth + 1);
-        node_id.push_back(u);
-        node_depth.push_back(depth);
+    tour.push_back({d, u});
+    for (int v : e_tree[u]) {
+        dfs(v, d + 1);
+        tour.push_back({d, u});
     }
-}
-
-int getLCA(int l, int r)  // [l, r)
-{
-    int n = node_id.size();
-    l += n;
-    r += n;
-    int lca = l;
-    while (l < r) {
-        if (l & 1) {
-            if (node_depth[segtree[l]] < node_depth[segtree[lca]]) lca = l;
-            l++;
-        }
-        if (!(r & 1)) {
-            if (node_depth[segtree[r]] < node_depth[segtree[lca]]) lca = r;
-            r--;
-        }
-        l = l >> 1;
-        r = r >> 1;
-    }
-    return node_id[segtree[lca]];
 }
 
 int main()
@@ -101,39 +96,31 @@ int main()
 
     int n, q;
     cin >> n >> q;
-    for (int i = 2; i <= n; i++) {
-        int e;
-        cin >> e;
-        addEdge(e, i);
+
+    for (int e = 2; e <= n; e++) {
+        int boss;
+        cin >> boss;
+        e_tree[boss].push_back(e);
     }
 
     dfs(1, 0);
-
-    n = node_id.size();
-    segtree.resize(n * 2);
-    for (int i = 0; i < n; i++) {
-        segtree[i + n] = i;
+    vi first_apperance(n + 1, -1);
+    dbg(tour);
+    for (uint i = 0; i < tour.size(); i++) {
+        auto [d, e] = tour[i];
+        if (first_apperance[e] == -1) first_apperance[e] = i;
     }
+    dbg(first_apperance);
 
-    for (int i = n - 1; i > 0; i--) {
-        int l = segtree[i << 1];
-        int r = segtree[i << 1 | 1];
-        if (node_depth[l] > node_depth[r]) swap(l, r);
-        segtree[i] = l;
-    }
-    dbg(node_id);
-    dbg(node_depth);
-    dbg(id_map);
-    dbg(segtree);
-
+    RMQ rmq(tour);
     while (q--) {
         int a, b;
         cin >> a >> b;
-        a = id_map[a];
-        b = id_map[b];
-        if (a > b) swap(a, b);
-        b++;
-        cout << getLCA(a, b) << endl;
+        int left = first_apperance[a];
+        int right = first_apperance[b];
+        if (left > right) swap(left, right);
+        int lcb = rmq.query(left, right);
+        cout << lcb << endl;
     }
 
     return 0;
