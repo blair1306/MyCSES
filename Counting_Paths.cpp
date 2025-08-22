@@ -84,6 +84,7 @@ vi parent(N);
 
 void dfs(int u, int d, int p)
 {
+    parent[u] = p;
     tour.push_back({d, u});
     for (int v : tree[u]) {
         if (v == p) continue;
@@ -113,12 +114,12 @@ int main()
     for (int i = 1; i < n; i++) {
         int a, b;
         cin >> a >> b;
-        parent[b] = a;
         tree[a].push_back(b);
         tree[b].push_back(a);
     }
 
-    dfs(1, 0, -1);
+    dfs(2, 0, -1);
+    dbg(parent);
     dbg(tour);
     int max_depth = 0;
     vi first_apperance(n + 1, -1);
@@ -144,12 +145,12 @@ int main()
         diff[a]++;
         diff[b]++;
         diff[lca]--;
-        if (p) diff[p]--;
+        if (p > 0) diff[p]--;
     }
 
     dbg(diff);
 
-    dfs2(1, 0);
+    dfs2(2, 0);
 
     for (int i = 1; i <= n; i++) cout << diff[i] << " ";
     return 0;
