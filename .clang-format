@@ -8,3 +8,4 @@ SpaceAfterCStyleCast: false
 BreakBeforeBraces: Custom
 BraceWrapping:
   AfterFunction: true
+AccessModifierOffset: -4
