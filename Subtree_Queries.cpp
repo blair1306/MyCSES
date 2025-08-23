@@ -93,9 +93,13 @@ vi end_pos(N);
 vi tree[N];
 int cnt = 0;
 
+vll arr;
+vll tour;
+
 void dfs(int u, int p)
 {
     start_pos[u] = ++cnt;
+    tour.push_back(arr[u - 1]);
     for (int v : tree[u]) {
         if (v == p) continue;
         dfs(v, u);
@@ -110,7 +114,6 @@ int main()
     std::cin.tie(NULL);
 
     int n, q;
-    vll arr;
     cin >> n >> q;
     arr.resize(n);
     for (auto &a : arr) cin >> a;
@@ -125,14 +128,16 @@ int main()
     dfs(1, 0);
     dbg(start_pos);
     dbg(end_pos);
+    dbg(tour);
 
-    SegmentTree<ll> segtree(arr);
+    SegmentTree<ll> segtree(tour);
 
     while (q--) {
         int t, a, val;
         cin >> t;
         if (t == 1) {
             cin >> a >> val;
+            a = start_pos[a];
             segtree.update(--a, val);
         }
         if (t == 2) {
