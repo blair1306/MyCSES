@@ -40,30 +40,67 @@ const int N = 10;  // size for global arrays (if needed)
 const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
+template <class T>
+class SegmentTree {
+    using Arr = vector<T>;
+    Arr arr;
+    Arr vals;
+    uint size;
+
+public:
+    SegmentTree(Arr &vals) : vals(vals), size(1)
+    {
+        build();
+    };
+
+    void build()
+    {
+        while (size <= vals.size()) size <<= 1;
+        arr.resize(2 * size);
+        for (uint i = 0; i < vals.size(); i++) arr[i + size] = vals[i];
+        for (int i = size - 1; i > 0; i--) {
+            arr[i] = arr[i << 1] + arr[i << 1 | 1];
+        }
+        dbg(arr);
+    }
+
+    void update(int u, T val)
+    {
+        T delta = val - vals[u];
+        vals[u] = val;
+        u += size;
+        arr[u] += delta;
+
+        for (u >>= 1; u > 0; u >>= 1) {
+            arr[u] = arr[u << 1] + arr[u << 1 | 1];
+        }
+    }
+
+    T query(int left, int right)
+    {
+        T res = 0;
+        for (left += size, right += size; left <= right; left >>= 1, right >>= 1) {
+            if (left & 1) res += arr[left++];
+            if (!(right & 1)) res += arr[right--];
+        }
+
+        return res;
+    }
+};
+
+vi start_pos(N);
+vi end_pos(N);
 vi tree[N];
-vll subtree_sum(N, 0);
-vi node_val(N, 0);
-vi parent(N, -1);
+int cnt = 0;
 
 void dfs(int u, int p)
 {
-    if (parent[u] == -1) parent[u] = p;
+    start_pos[u] = ++cnt;
     for (int v : tree[u]) {
         if (v == p) continue;
         dfs(v, u);
-        subtree_sum[u] += subtree_sum[v];
     }
-}
-
-void modify(int u, ll val)
-{
-    ll diff = val - node_val[u];
-    node_val[u] = val;
-    subtree_sum[u] += diff;
-    while (u > 0) {
-        u = parent[u];
-        subtree_sum[u] += diff;
-    }
+    end_pos[u] = cnt;
 }
 
 int main()
@@ -73,35 +110,39 @@ int main()
     std::cin.tie(NULL);
 
     int n, q;
+    vll arr;
     cin >> n >> q;
+    arr.resize(n);
+    for (auto &a : arr) cin >> a;
 
-    for (int i = 1; i <= n; i++) {
-        int val;
-        cin >> val;
-        node_val[i] = val;
-        subtree_sum[i] = val;
-    }
-
-    while (n-- > 1) {
+    for (int i = 1; i < n; i++) {
         int a, b;
         cin >> a >> b;
         tree[a].push_back(b);
         tree[b].push_back(a);
     }
 
-    dbg(tree);
     dfs(1, 0);
+    dbg(start_pos);
+    dbg(end_pos);
+
+    SegmentTree<ll> segtree(arr);
 
     while (q--) {
         int t, a, val;
         cin >> t;
         if (t == 1) {
             cin >> a >> val;
-            modify(a, val);
+            segtree.update(--a, val);
         }
         if (t == 2) {
+            ll ans;
+            int left, right;
             cin >> a;
-            cout << subtree_sum[a] << endl;
+            left = start_pos[a];
+            right = end_pos[a];
+            ans = segtree.query(--left, --right);
+            cout << ans << endl;
         }
     }
 
