@@ -58,6 +58,7 @@ void dfs(int u, int p)
 void modify(int u, ll val)
 {
     ll diff = val - node_val[u];
+    node_val[u] = val;
     subtree_sum[u] += diff;
     while (u > 0) {
         u = parent[u];
