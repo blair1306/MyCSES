@@ -40,11 +40,94 @@ const int N = 10;  // size for global arrays (if needed)
 const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
+template <class T>
+class FenwickTree {
+public:
+    FenwickTree(size_t n) : size(n), arr(n + 1) {};
+    T query(int idx)
+    {
+        T ans = 0;
+        for (; idx > 0; idx -= (idx & -idx)) {
+            ans += arr[idx];
+        }
+        return ans;
+    }
+    void update(int idx, T dt)
+    {
+        for (; (size_t)idx <= size; idx += (idx & -idx)) {
+            arr[idx] += dt;
+        }
+    }
+
+private:
+    size_t size;
+    vector<T> arr;
+};
+
+int timer = 1;
+vi pos_id(N, -1);
+vector<pii> pos(N);
+vi tree[N];
+
+void dfs(int u, int p)
+{
+    if (pos_id[u] == -1) {
+        pos_id[u] = timer;
+        pos[u].first = timer;
+        timer++;
+    }
+    for (int v : tree[u]) {
+        if (v == p) continue;
+        dfs(v, u);
+    }
+    pos[u].second = timer - 1;
+}
+
 int main()
 {
     // Fast I/O
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
+
+    int n, q;
+    cin >> n >> q;
+    vi vals(n + 1);
+    for (int i = 1; i <= n; i++) cin >> vals[i];
+
+    for (int i = 1; i < n; i++) {
+        int a, b;
+        cin >> a >> b;
+        tree[a].push_back(b);
+        tree[b].push_back(a);
+    }
+
+    dfs(1, -1);
+
+    FenwickTree<ll> ft(n);
+    for (int i = 1; i <= n; i++) {
+        auto [start, end] = pos[pos_id[i]];
+
+        ft.update(start, vals[i]);
+        ft.update(end + 1, -vals[i]);
+    }
+
+    while (q--) {
+        int t, s;
+        ll x;
+        cin >> t >> s;
+        auto [start, end] = pos[pos_id[s]];
+
+        if (t == 2) {
+            int psum = ft.query(start);
+            cout << psum << endl;
+        }
+        if (t == 1) {
+            cin >> x;
+            ll dt = x - vals[s];
+            ft.update(start, dt);
+            ft.update(end + 1, -dt);
+        }
+    }
 
     return 0;
 }
