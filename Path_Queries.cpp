@@ -71,11 +71,7 @@ vi tree[N];
 
 void dfs(int u, int p)
 {
-    if (pos_id[u] == -1) {
-        pos_id[u] = timer;
-        pos[u].first = timer;
-        timer++;
-    }
+    pos[u].first = timer++;
     for (int v : tree[u]) {
         if (v == p) continue;
         dfs(v, u);
@@ -105,7 +101,7 @@ int main()
 
     FenwickTree<ll> ft(n);
     for (int i = 1; i <= n; i++) {
-        auto [start, end] = pos[pos_id[i]];
+        auto [start, end] = pos[i];
 
         ft.update(start, vals[i]);
         ft.update(end + 1, -vals[i]);
@@ -115,15 +111,16 @@ int main()
         int t, s;
         ll x;
         cin >> t >> s;
-        auto [start, end] = pos[pos_id[s]];
+        auto [start, end] = pos[s];
 
         if (t == 2) {
-            int psum = ft.query(start);
+            ll psum = ft.query(start);
             cout << psum << endl;
         }
         if (t == 1) {
             cin >> x;
             ll dt = x - vals[s];
+            vals[s] = x;
             ft.update(start, dt);
             ft.update(end + 1, -dt);
         }
