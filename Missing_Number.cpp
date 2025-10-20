@@ -49,7 +49,7 @@ int main()
     ull ans = 0;
     int n;
     cin >> n;
-    ans = n * (n + 1) / 2;
+    ans = (ull)n * (n + 1) / 2;
 
     for (int i = 1; i < n; i++) {
         int num;
