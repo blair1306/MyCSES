@@ -84,7 +84,9 @@ private:
   T query(int start, int end, int at, int at_left, int at_right)
   {
     if (start > at_right || end < at_left) return DEFAULT;
-    if (start >= at_left && end <= at_right) return segtree[at];
+    // the queried range is fully covered by the node's range
+    // [start [at_left, at_right] end]
+    if (start <= at_left && end >= at_right) return segtree[at];
     int mid = (at_left + at_right) / 2;
     T left_res = query(start, end, at * 2, at_left, mid);
     T right_res = query(start, end, at * 2 + 1, mid + 1, at_right);
@@ -94,8 +96,12 @@ private:
 public:
   RSQ(const Arr& arr)
   {
-    sz = arr.size() * 4;
-    segtree = Arr(sz, DEFAULT);
+    /*
+    Capacity: segtree is allocated as sz * 4 (≈ 4·n) — the buffer/capacity for tree nodes.
+    Range: logical array range used for build/query/set is [0, sz-1] where sz == arr.size().
+    */
+    sz = arr.size();
+    segtree = Arr(sz * 4, DEFAULT);
     build(arr, 1, 0, sz - 1);
     dbg("built");
     dbg(segtree);
@@ -135,10 +141,10 @@ int main()
     cin >> t;
     if (t == 1) {
       cin >> k >> u;
-      rsq.set(k, u);
+      rsq.set(k - 1, u);
     } else {
       cin >> a >> b;
-      cout << rsq.query(a, b) << endl;
+      cout << rsq.query(a - 1, b - 1) << endl;
     }
   }
   return 0;
