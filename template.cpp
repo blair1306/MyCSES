@@ -22,7 +22,7 @@ typedef vector<ll> vll;
 #define endl '\n'
 #define all(x) (x).begin(), (x).end()
 
-// #define LOCAL
+#define LOCAL
 #ifdef LOCAL
 #include "mydebug.h"
 #else
@@ -42,9 +42,9 @@ const int N = 2e5 + 5;  // size for global arrays (if needed)
 
 int main()
 {
-    // Fast I/O
-    std::ios_base::sync_with_stdio(false);
-    std::cin.tie(NULL);
+  // Fast I/O
+  std::ios_base::sync_with_stdio(false);
+  std::cin.tie(NULL);
 
-    return 0;
+  return 0;
 }

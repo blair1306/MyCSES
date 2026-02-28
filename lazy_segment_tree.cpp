@@ -32,13 +32,13 @@ private:
     }
     if (ql <= l && r <= qr) {
       apply(v, r - l + 1, add);
-    } else {
-      push_down(v, l, r);
-      int m = (l + r) / 2;
-      range_add(2 * v, l, m, ql, qr, add);
-      range_add(2 * v + 1, m + 1, r, ql, qr, add);
-      tree[v] = tree[2 * v] + tree[2 * v + 1];
+      return;
     }
+    push_down(v, l, r);
+    int m = (l + r) / 2;
+    range_add(2 * v, l, m, ql, qr, add);
+    range_add(2 * v + 1, m + 1, r, ql, qr, add);
+    tree[v] = tree[2 * v] + tree[2 * v + 1];
   }
 
   T range_sum(int v, int l, int r, int ql, int qr)
