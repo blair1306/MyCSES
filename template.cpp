@@ -90,7 +90,7 @@ typedef vector<ll> vll;
 #define endl '\n'
 #define all(x) (x).begin(), (x).end()
 
-#define LOCAL
+// #define LOCAL
 #ifdef LOCAL
 #include "mydebug.h"
 #else
