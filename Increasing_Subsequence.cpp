@@ -81,19 +81,17 @@ int main()
   cin >> n;
   vi number(n);
   for (int i = 0; i < n; i++) cin >> number[i];
-  vi dp(n, 1);
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < i; j++) {
-      if (number[j] < number[i]) dp[i] = max(dp[j] + 1, dp[i]);
-    }
+
+  vi dp;  // let dp[i] be the smallest element of any increasing sub seq of len i+1 that ends at i
+  for (auto i : number) {
+    int pos = lower_bound(dp.begin(), dp.end(), i) - dp.begin();
+    if (pos == dp.size())
+      dp.push_back(i);
+    else
+      dp[pos] = i;
   }
 
-  int ans = dp[0];
-  for (int i = 1; i < n; i++) {
-    ans = max(ans, dp[i]);
-  }
-
-  cout << ans << endl;
+  cout << dp.size() << endl;
 
   return 0;
 }
