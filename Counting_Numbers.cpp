@@ -71,7 +71,7 @@ const int N = 10;  // size for global arrays (if needed)
 const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
-#define POS 18
+#define POS 20
 #define TIGHT 2
 #define LEADING0 2
 #define LAST_DIGIT 11  // 10 represents invalid
@@ -83,14 +83,19 @@ ll dfs(int pos, int tight, int leading0, int last_digit)
   if (pos == num.size()) return 1;
   ll& res = memo[pos][tight][leading0][last_digit];
   if (res != -1) return res;
+
+  res = 0;  // !!! Reset before accumulating
+
   int limit = tight ? num[pos] - '0' : 9;
+
   for (int d = 0; d <= limit; d++) {
     int new_tight = tight && (d == limit);
     int new_leading0 = leading0 && (d == 0);
     int new_last = new_leading0 ? 10 : d;
-    if (!leading0 && (last_digit != 10) && last_digit == d) continue;
+    if (!new_leading0 && (last_digit != 10) && last_digit == d) continue;
     res += dfs(pos + 1, new_tight, new_leading0, new_last);
   }
+
   return res;
 }
 
@@ -98,7 +103,7 @@ ll count_valid(ll x)
 {
   if (x < 0) return 0;
   num = to_string(x);
-  memset(memo, -1, sizeof(num));
+  memset(memo, -1, sizeof(memo));  // !!!Always memset using the variable you are clearing.
   return dfs(0, 1, 1, 10);
 }
 
