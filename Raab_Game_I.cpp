@@ -72,15 +72,16 @@ const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
 /*
-Consider a two player game where each player has n cards numbered 1,2,\dots,n. On each turn both players place one of their cards on the table. The player who placed the higher card gets one point. If the cards are equal, neither player gets a point. The game continues until all cards have been played.
-You are given the number of cards n and the players' scores at the end of the game, a and b. Your task is to give an example of how the game could have played out.
-Input
-The first line contains one integer t: the number of tests.
-Then there are t lines, each with three integers n, a and b.
+Consider a two player game where each player has n cards numbered 1,2,\dots,n. On each turn both
+players place one of their cards on the table. The player who placed the higher card gets one point.
+If the cards are equal, neither player gets a point. The game continues until all cards have been
+played. You are given the number of cards n and the players' scores at the end of the game, a and b.
+Your task is to give an example of how the game could have played out. Input The first line contains
+one integer t: the number of tests. Then there are t lines, each with three integers n, a and b.
 Output
 For each test case print YES if there is a game with the given outcome and NO otherwise.
-If the answer is YES, print an example of one possible game. Print two lines representing the order in which the players place their cards. You can give any valid example.
-Constraints
+If the answer is YES, print an example of one possible game. Print two lines representing the order
+in which the players place their cards. You can give any valid example. Constraints
 
 1 \le t \le 1000
 1 \le n \le 100
@@ -127,12 +128,14 @@ void solve(int n, int a, int b)
 
     for (int i = start; i <= n; i++) {
       swap(card[start], card[i]);
-      diff = card[i] - i;
-      if (diff >= 0)
+      diff = card[start] - start;  // player B's card is start
+      if (diff > 0)                // equal score no point
         na = a - 1;
-      else
+      else if (diff < 0)
         nb = b - 1;
       bfs(start + 1, na, nb);
+      if (found)
+        return;  // if I don't do this, the permutation will be worng because of the next swap
       swap(card[start], card[i]);
     }
   };
@@ -145,8 +148,10 @@ void solve(int n, int a, int b)
   }
 
   cout << "YES" << endl;
-  for (int c : card) cout << c << " " << endl;
-  for (int i = 1; i <= n; i++) cout << i << " " << endl;
+  for (int i = 1; i <= n; i++) cout << card[i] << " ";
+  cout << endl;
+  for (int i = 1; i <= n; i++) cout << i << " ";
+  cout << endl;
 }
 
 int main()
