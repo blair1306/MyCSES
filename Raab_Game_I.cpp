@@ -107,51 +107,35 @@ YES
 YES
 1 2
 2 1
+
+1 2 3 4 5 6 A fixed
+6 1 2 3 4 5 shift 1 A win 5 B win 1
+5 6 1 2 3 4 shift 2 A win 4 B win 2
+
+1 2 3 4
+2 3 1 4 shift left by 1
+
 NO
 */
 
-void solve(int n, int a, int b)
+vi solve(int n, int a, int b)  // -> cards of B
 {
-  vi card;
-  bool found = false;
-  for (int i = 0; i <= n; i++) card.push_back(i);
-
-  function<void(int, int, int)> bfs = [&](int start, int a, int b) {
-    if (a < 0 || b < 0) return;
-    if (start > n && a == 0 && b == 0) found = true;
-    if (found) return;
-
-    dbg(start, card);
-
-    int diff;  // card a - card b(1...n)
-    int na = a, nb = b;
-
-    for (int i = start; i <= n; i++) {
-      swap(card[start], card[i]);
-      diff = card[start] - start;  // player B's card is start
-      if (diff > 0)                // equal score no point
-        na = a - 1;
-      else if (diff < 0)
-        nb = b - 1;
-      bfs(start + 1, na, nb);
-      if (found)
-        return;  // if I don't do this, the permutation will be worng because of the next swap
-      swap(card[start], card[i]);
-    }
-  };
-
-  bfs(1, a, b);
-
-  if (!found) {
-    cout << "NO" << endl;
-    return;
+  if ((a + b > n) || (a * b == 0 && a + b != 0)) {
+    return {};
   }
 
-  cout << "YES" << endl;
-  for (int i = 1; i <= n; i++) cout << card[i] << " ";
-  cout << endl;
-  for (int i = 1; i <= n; i++) cout << i << " ";
-  cout << endl;
+  int tie = a + b;
+  int shift = a;
+  vi card;
+  for (int i = 1; i <= n; i++) card.push_back(i);
+  for (int i = 0; i < tie; i++) {
+    if (i == tie - 1)
+      card[i] = 1;
+    else
+      card[i] = card[(i + 1) % tie];
+  }
+
+  return card;
 }
 
 int main()
@@ -166,7 +150,16 @@ int main()
   while (t--) {
     int n, a, b;
     cin >> n >> a >> b;
-    solve(n, a, b);
+    vi cardB = solve(n, a, b);
+    if (cardB.empty()) {
+      cout << "NO" << endl;
+    } else {
+      cout << "YES" << endl;
+      for (int c = 1; c <= n; c++) cout << c << " ";
+      cout << endl;
+      for (int c : cardB) cout << c << " ";
+      cout << endl;
+    }
   }
 
   return 0;
