@@ -114,6 +114,7 @@ YES
 
 1 2 3 4
 2 3 1 4 shift left by 1
+3 1 2 4 by 2
 
 NO
 */
@@ -127,12 +128,13 @@ vi solve(int n, int a, int b)  // -> cards of B
   int tie = a + b;
   int shift = a;
   vi card;
-  for (int i = 1; i <= n; i++) card.push_back(i);
+  vi backup_card;
+  for (int i = 1; i <= n; i++) {
+    card.push_back(i);
+    backup_card.push_back(i);
+  }
   for (int i = 0; i < tie; i++) {
-    if (i == tie - 1)
-      card[i] = 1;
-    else
-      card[i] = card[(i + 1) % tie];
+    card[i] = (i + shift) % tie + 1;  // old values are overwritten when shift > 1!!!
   }
 
   return card;
