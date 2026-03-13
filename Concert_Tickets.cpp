@@ -74,6 +74,32 @@ const int N = 2e5 + 5;  // size for global arrays (if needed)
 typedef vector<pii> vpii;
 typedef map<int, int> mii;
 
+/*
+
+There are n concert tickets available, each with a certain price. Then, m customers arrive, one
+after another. Each customer announces the maximum price they are willing to pay for a ticket, and
+after this, they will get a ticket with the nearest possible price such that it does not exceed the
+maximum price. Input The first input line contains integers n and m: the number of tickets and the
+number of customers. The next line contains n integers h_1,h_2,\ldots,h_n: the price of each ticket.
+The last line contains m integers t_1,t_2,\ldots,t_m: the maximum price for each customer in the
+order they arrive. Output Print, for each customer, the price that they will pay for their ticket.
+After this, the ticket cannot be purchased again. If a customer cannot get any ticket, print -1.
+Constraints
+
+1 \le n, m \le 2 \cdot 10^5
+1 \le h_i, t_i \le 10^9
+
+Example
+Input:
+5 3
+5 3 7 8 5
+4 8 3
+
+Output:
+3
+8
+-1*/
+
 int main()
 {
   // Fast I/O
@@ -83,30 +109,27 @@ int main()
   int n, m;
   cin >> n >> m;
 
-  mii ticket_cnt_by_price;
-  vi ticket;
-
+  multiset<int> tickets;
   for (int i = 0; i < n; i++) {
-    int ticket_price;
-    cin >> ticket_price;
-    if (ticket_cnt_by_price.count(ticket_price) == 0) {
-      ticket.push_back(ticket_price);
-    }
-    ticket_cnt_by_price[ticket_price]++;
+    int ticket;
+    cin >> ticket;
+    tickets.insert(ticket);
   }
 
-  sort(ticket.begin(), ticket.end());
-
   for (int i = 0; i < m; i++) {
-    int customer_price, ticket_idx;
-    cin >> customer_price;
-    ticket_idx = lower_bound(all(ticket), customer_price) - ticket.begin();
-    if (ticket_idx == ticket.size() || ticket_cnt_by_price[ticket_idx] == 0) {
+    int customer;
+    cin >> customer;
+    // 1. Find the first ticket price > customer
+    auto it = tickets.upper_bound(customer);
+    if (it == tickets.begin()) {
       cout << -1 << endl;
       continue;
     }
-    cout << ticket[ticket_idx] << endl;
-    ticket_cnt_by_price[ticket_idx]--;
+
+    // Step back to find the largest price <= customer
+    it--;
+    cout << *it << endl;
+    tickets.erase(it);
   }
 
   return 0;
