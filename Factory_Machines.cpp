@@ -96,17 +96,18 @@ int main()
   }
 
   ll lower = 1, upper = 1e18;
-  ll mid;
-  while (lower < upper) {
-    mid = (lower + upper) / 2;
+  ll ans = upper;
+  while (lower <= upper) {
+    ll mid = (lower + upper) / 2;
     if (test(mid, t, machines)) {
-      upper = mid;
+      ans = mid;        // This mid is valid! Record it...
+      upper = mid - 1;  // ...but let's see if there's an even smaller one.
     } else {
-      lower = mid + 1;
+      lower = mid + 1;  // Not enough time, we must look higher.
     }
   }
 
-  cout << mid << endl;
+  cout << ans << endl;
 
   return 0;
 }
