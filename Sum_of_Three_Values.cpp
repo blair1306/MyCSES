@@ -99,15 +99,10 @@ int main()
   for (int i = 0; i < n; i++) {
     for (int j = i + 1; j < n; j++) {
       int y = t - nums[i].x - nums[j].x;
-      auto it_end = upper_bound(all(nums), IdNum{y, 0});
       auto it = lower_bound(nums.begin() + j + 1, nums.end(), IdNum{y, 0});
-      if (it == nums.begin()) continue;
-      // for (; it < it_end; it++) {
-      // if ((*it).id != nums[i].id && (*it).id != nums[j].id) {
+      if (it == nums.begin() || (*it).x != y) continue;
       cout << (*it).id << " " << nums[i].id << " " << nums[j].id << endl;
       return 0;
-      // }
-      // }
     }
   }
 
