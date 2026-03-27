@@ -68,8 +68,10 @@ const int MOD = 1e9 + 7;  // or 998244353
 #ifdef LOCAL
 const int N = 10;  // size for global arrays (if needed)
 #else
-const int N = 100;  // size for global arrays (if needed)
+const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
+
+typedef vector<pii> vpii;
 
 int main()
 {
@@ -77,57 +79,30 @@ int main()
   std::ios_base::sync_with_stdio(false);
   std::cin.tie(NULL);
 
+  /*
+  4 2 1 5 3
+
+  1 2 3 4 5
+  3 2 5 1 4
+   */
+
   int n;
   cin >> n;
-
-  // int grid[N][N];
-  vvi grid(n, vi(n, -1));
-
+  vpii nums(n);
   for (int i = 0; i < n; i++) {
-    grid[i][i] = 0;
+    cin >> nums[i].first;
+    nums[i].second = i;
   }
 
-  for (int col = 0; col < n; col++) {
-    for (int row = 0; row < col; row++) {
-      if (row == 0) {
-        grid[row][col] = col;
-        continue;
-      }
+  sort(all(nums));
 
-      vi used(100);
-      for (int x = 0; x < col; x++) {
-        // x = 2, row = 1
-        if (x == row) continue;
-        if (x < row)
-          used[grid[x][row]] = 1;
-        else
-          used[grid[row][x]] = 1;
-      }
-
-      for (int y = 0; y < row; y++) {
-        used[grid[y][col]] = 1;
-      }
-
-      dbg(row, col);
-      dbg(used);
-
-      int smallest = 0;
-      for (int i = 1; i < col; i++) {
-        if (used[i] == 0) {
-          smallest = i;
-          break;
-        }
-      }
-
-      grid[row][col] = smallest;
-      grid[col][row] = smallest;
-    }
+  int num_round = 1;
+  for (int i = 1; i < n; i++) {
+    auto [x, og_i] = nums[i];
+    auto [y, og_last_i] = nums[i - 1];
+    if (og_i < og_last_i) num_round++;
   }
+  cout << num_round << endl;
 
-  for (int row = 0; row < n; row++) {
-    for (int n : grid[row]) cout << n << " ";
-    cout << endl;
-  }
-
-  for (int i = 1; i < n; i++) return 0;
+  return 0;
 }

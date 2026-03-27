@@ -68,8 +68,28 @@ const int MOD = 1e9 + 7;  // or 998244353
 #ifdef LOCAL
 const int N = 10;  // size for global arrays (if needed)
 #else
-const int N = 100;  // size for global arrays (if needed)
+const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
+
+unordered_set<string> seen;
+vector<string> order;
+
+void backtrack(string& str, int s)
+{
+  int size = str.size();
+  if (s >= size) {
+    if (seen.find(str) != seen.end()) return;
+    seen.insert(str);
+    order.push_back(str);
+    return;
+  }
+
+  for (int i = s; i < size; i++) {
+    swap(str.at(s), str.at(i));
+    backtrack(str, s + 1);
+    swap(str.at(s), str.at(i));
+  }
+}
 
 int main()
 {
@@ -77,57 +97,15 @@ int main()
   std::ios_base::sync_with_stdio(false);
   std::cin.tie(NULL);
 
-  int n;
-  cin >> n;
+  string s;
+  cin >> s;
 
-  // int grid[N][N];
-  vvi grid(n, vi(n, -1));
-
-  for (int i = 0; i < n; i++) {
-    grid[i][i] = 0;
+  backtrack(s, 0);
+  cout << seen.size() << endl;
+  sort(all(order));
+  for (auto i : order) {
+    cout << i << endl;
   }
 
-  for (int col = 0; col < n; col++) {
-    for (int row = 0; row < col; row++) {
-      if (row == 0) {
-        grid[row][col] = col;
-        continue;
-      }
-
-      vi used(100);
-      for (int x = 0; x < col; x++) {
-        // x = 2, row = 1
-        if (x == row) continue;
-        if (x < row)
-          used[grid[x][row]] = 1;
-        else
-          used[grid[row][x]] = 1;
-      }
-
-      for (int y = 0; y < row; y++) {
-        used[grid[y][col]] = 1;
-      }
-
-      dbg(row, col);
-      dbg(used);
-
-      int smallest = 0;
-      for (int i = 1; i < col; i++) {
-        if (used[i] == 0) {
-          smallest = i;
-          break;
-        }
-      }
-
-      grid[row][col] = smallest;
-      grid[col][row] = smallest;
-    }
-  }
-
-  for (int row = 0; row < n; row++) {
-    for (int n : grid[row]) cout << n << " ";
-    cout << endl;
-  }
-
-  for (int i = 1; i < n; i++) return 0;
+  return 0;
 }

@@ -68,8 +68,47 @@ const int MOD = 1e9 + 7;  // or 998244353
 #ifdef LOCAL
 const int N = 10;  // size for global arrays (if needed)
 #else
-const int N = 100;  // size for global arrays (if needed)
+const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
+
+/*
+0, 0, ->
+*/
+typedef vector<string> vs;
+
+const int BOARD_SIZE = 8;
+
+int solve(const vs& board)
+{
+  int ans = 0;
+  vi col_used(BOARD_SIZE);
+  vi diag1_used(BOARD_SIZE * 2 - 1);
+  vi diag2_used(BOARD_SIZE * 2 - 1);
+
+  function<void(int)> dfs = [&](int row) -> void {
+    if (row == BOARD_SIZE) {
+      ans++;
+      return;
+    }
+
+    for (int col = 0; col < BOARD_SIZE; col++) {
+      if (board[row][col] == '*') continue;
+
+      int& c = col_used[col];
+      int& d1 = diag1_used[row + col];
+      int& d2 = diag2_used[row - col + BOARD_SIZE - 1];
+
+      if (c || d1 || d2) continue;
+      c = d1 = d2 = 1;
+      dfs(row + 1);
+      c = d1 = d2 = 0;
+    }
+  };
+
+  dfs(0);
+
+  return ans;
+}
 
 int main()
 {
@@ -77,57 +116,13 @@ int main()
   std::ios_base::sync_with_stdio(false);
   std::cin.tie(NULL);
 
-  int n;
-  cin >> n;
+  vs board(BOARD_SIZE);
 
-  // int grid[N][N];
-  vvi grid(n, vi(n, -1));
+  for (int i = 0; i < BOARD_SIZE; i++) cin >> board[i];
+  int ans;
+  ans = solve(board);
 
-  for (int i = 0; i < n; i++) {
-    grid[i][i] = 0;
-  }
+  cout << ans << endl;
 
-  for (int col = 0; col < n; col++) {
-    for (int row = 0; row < col; row++) {
-      if (row == 0) {
-        grid[row][col] = col;
-        continue;
-      }
-
-      vi used(100);
-      for (int x = 0; x < col; x++) {
-        // x = 2, row = 1
-        if (x == row) continue;
-        if (x < row)
-          used[grid[x][row]] = 1;
-        else
-          used[grid[row][x]] = 1;
-      }
-
-      for (int y = 0; y < row; y++) {
-        used[grid[y][col]] = 1;
-      }
-
-      dbg(row, col);
-      dbg(used);
-
-      int smallest = 0;
-      for (int i = 1; i < col; i++) {
-        if (used[i] == 0) {
-          smallest = i;
-          break;
-        }
-      }
-
-      grid[row][col] = smallest;
-      grid[col][row] = smallest;
-    }
-  }
-
-  for (int row = 0; row < n; row++) {
-    for (int n : grid[row]) cout << n << " ";
-    cout << endl;
-  }
-
-  for (int i = 1; i < n; i++) return 0;
+  return 0;
 }

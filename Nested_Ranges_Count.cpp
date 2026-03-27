@@ -72,9 +72,37 @@ const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
 struct Range {
-  int left;
-  int right;
+  int l;
+  int r;
   int idx;
+};
+
+struct Fenwick {
+  vi tree;
+  Fenwick(int n) : tree(n + 1) {};
+  void update(int k, int dt)
+  {
+    k = k + 1;
+    for (; k < tree.size(); k += (k & -k)) {
+      tree[k] += dt;
+    }
+  }
+
+  int query(int k)
+  {
+    int ans = 0;
+    k = k + 1;
+    for (; k > 0; k -= (k & -k)) {
+      ans += tree[k];
+    }
+
+    return ans;
+  }
+
+  void reset()
+  {
+    fill(all(tree), 0);
+  }
 };
 
 int main()
@@ -85,60 +113,53 @@ int main()
 
   int n;
   cin >> n;
-  vector<Range> ranges;
-  vi contain(n);
-  vi contained(n);
+  vi comp;
+  // set<int> comp;
 
+  vector<Range> ranges;
   for (int i = 0; i < n; i++) {
-    Range r;
-    cin >> r.left >> r.right;
-    r.idx = i;
-    ranges.push_back(r);
+    Range range;
+    cin >> range.l >> range.r;
+    comp.push_back(range.r);
+    range.idx = i;
+    ranges.push_back(range);
   }
 
-  sort(all(ranges), [](const Range& lhs, const Range& rhs) {
-    if (lhs.left == rhs.left)
-      return lhs.right > rhs.right;
+  sort(ranges.begin(), ranges.end(), [](const Range& lhs, const Range& rhs) {
+    if (lhs.l == rhs.l)
+      return lhs.r > rhs.r;
     else
-      return lhs.left < rhs.left;
+      return lhs.l < rhs.l;
   });
 
-#ifdef LOCAL
-  for (auto r : ranges) cerr << "[" << r.left << "," << r.right << "]" << "#" << r.idx << endl;
-#endif
+  dbg(ranges[0].l);
+  sort(all(comp));
+  auto last = unique(all(comp));
+  comp.erase(last, comp.end());
 
-  /*
-  12345678
-  ------
-   ---
-    ----
-      ----
-      --
-  */
-
-  int max_r = ranges[0].right;
-  for (int i = 1; i < n; i++) {
-    auto range = ranges[i];
-    if (range.right > max_r) {
-      max_r = range.right;
-      continue;
-    }
-    contained[range.idx] += 1;
+  for (auto& range : ranges) {
+    range.r = lower_bound(all(comp), range.r) - comp.begin();
   }
 
-  int min_r = ranges[n - 1].right;
-  for (int i = n - 2; i >= 0; i--) {
-    auto range = ranges[i];
-    if (range.right < min_r) {
-      min_r = range.right;
-      continue;
-    }
-    contain[range.idx] += 1;
+  Fenwick fenw(comp.size());
+  vi contains(n);
+  vi contained_by(n);
+  int r, idx;
+  for (int i = 0; i < n; i++) {
+    r = ranges[i].r, idx = ranges[i].idx;
+    contained_by[idx] = i - fenw.query(r - 1);
+    fenw.update(r, 1);
+  }
+  fenw.reset();
+  for (int i = n - 1; i >= 0; i--) {
+    r = ranges[i].r, idx = ranges[i].idx;
+    contains[idx] = fenw.query(r);
+    fenw.update(r, 1);
   }
 
-  for (int i = 0; i < n; i++) cout << contain[i] << " ";
+  for (auto c : contains) cout << c << " ";
   cout << endl;
-  for (int i = 0; i < n; i++) cout << contained[i] << " ";
+  for (auto c : contained_by) cout << c << " ";
 
   return 0;
 }

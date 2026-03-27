@@ -68,8 +68,10 @@ const int MOD = 1e9 + 7;  // or 998244353
 #ifdef LOCAL
 const int N = 10;  // size for global arrays (if needed)
 #else
-const int N = 100;  // size for global arrays (if needed)
+const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
+
+typedef vector<pii> vpii;
 
 int main()
 {
@@ -77,57 +79,38 @@ int main()
   std::ios_base::sync_with_stdio(false);
   std::cin.tie(NULL);
 
-  int n;
-  cin >> n;
+  int n, target;
+  cin >> n >> target;
 
-  // int grid[N][N];
-  vvi grid(n, vi(n, -1));
+  vi arr(n);
+  vpii aux(n);
 
   for (int i = 0; i < n; i++) {
-    grid[i][i] = 0;
+    int num;
+    cin >> num;
+    arr[i] = num;
+    aux[i] = {num, i + 1};
   }
 
-  for (int col = 0; col < n; col++) {
-    for (int row = 0; row < col; row++) {
-      if (row == 0) {
-        grid[row][col] = col;
-        continue;
-      }
+  sort(all(arr));
+  sort(all(aux));
 
-      vi used(100);
-      for (int x = 0; x < col; x++) {
-        // x = 2, row = 1
-        if (x == row) continue;
-        if (x < row)
-          used[grid[x][row]] = 1;
-        else
-          used[grid[row][x]] = 1;
-      }
-
-      for (int y = 0; y < row; y++) {
-        used[grid[y][col]] = 1;
-      }
-
-      dbg(row, col);
-      dbg(used);
-
-      int smallest = 0;
-      for (int i = 1; i < col; i++) {
-        if (used[i] == 0) {
-          smallest = i;
-          break;
-        }
-      }
-
-      grid[row][col] = smallest;
-      grid[col][row] = smallest;
+  for (int i = 0; i < n; i++) {
+    int num;
+    num = arr[i];
+    auto it = upper_bound(arr.begin(), arr.end(), target - num);
+    if (it == arr.begin()) continue;
+    it--;
+    if ((*it) + num == target) {
+      int other_idx = it - arr.begin();
+      if (other_idx == i) continue;
+      dbg(other_idx, num);
+      cout << aux[i].second << " " << aux[other_idx].second << endl;
+      return 0;
     }
   }
 
-  for (int row = 0; row < n; row++) {
-    for (int n : grid[row]) cout << n << " ";
-    cout << endl;
-  }
+  cout << "IMPOSSIBLE" << endl;
 
-  for (int i = 1; i < n; i++) return 0;
+  return 0;
 }

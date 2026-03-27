@@ -68,9 +68,28 @@ const int MOD = 1e9 + 7;  // or 998244353
 #ifdef LOCAL
 const int N = 10;  // size for global arrays (if needed)
 #else
-const int N = 100;  // size for global arrays (if needed)
+const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
+/*
+There are n sticks with some lengths. Your task is to modify the sticks so that each stick has the
+same length. You can either lengthen and shorten each stick. Both operations cost x where x is the
+difference between the new and original length. What is the minimum total cost? Input The first
+input line contains an integer n: the number of sticks. Then there are n integers:
+p_1,p_2,\ldots,p_n: the lengths of the sticks. Output Print one integer: the minimum total cost.
+Constraints
+
+1 \le n \le 2 \cdot 10^5
+1 \le p_i \le 10^9
+
+Example
+Input:
+5
+2 3 1 5 2
+
+Output:
+5
+*/
 int main()
 {
   // Fast I/O
@@ -80,54 +99,38 @@ int main()
   int n;
   cin >> n;
 
-  // int grid[N][N];
-  vvi grid(n, vi(n, -1));
+  ll median1, median2;
+  vll sticks(n);
 
   for (int i = 0; i < n; i++) {
-    grid[i][i] = 0;
+    ll stick;
+    cin >> stick;
+    sticks[i] = stick;
   }
 
-  for (int col = 0; col < n; col++) {
-    for (int row = 0; row < col; row++) {
-      if (row == 0) {
-        grid[row][col] = col;
-        continue;
-      }
-
-      vi used(100);
-      for (int x = 0; x < col; x++) {
-        // x = 2, row = 1
-        if (x == row) continue;
-        if (x < row)
-          used[grid[x][row]] = 1;
-        else
-          used[grid[row][x]] = 1;
-      }
-
-      for (int y = 0; y < row; y++) {
-        used[grid[y][col]] = 1;
-      }
-
-      dbg(row, col);
-      dbg(used);
-
-      int smallest = 0;
-      for (int i = 1; i < col; i++) {
-        if (used[i] == 0) {
-          smallest = i;
-          break;
-        }
-      }
-
-      grid[row][col] = smallest;
-      grid[col][row] = smallest;
-    }
+  sort(all(sticks));
+  /*
+    minimizing sum of squared differences → mean
+    minimizing sum of absolute differences → median
+  */
+  if (n & 1) {
+    median1 = median2 = n / 2;
+  } else {
+    median1 = n / 2;
+    median2 = median1 - 1;
   }
 
-  for (int row = 0; row < n; row++) {
-    for (int n : grid[row]) cout << n << " ";
-    cout << endl;
+  ll length1 = sticks[median1];
+  ll length2 = sticks[median2];
+  ll sum1 = 0;
+  ll sum2 = 0;
+
+  for (int stick : sticks) {
+    sum1 += abs(stick - length1);
+    sum2 += abs(stick - length2);
   }
 
-  for (int i = 1; i < n; i++) return 0;
+  cout << min(sum1, sum2) << endl;
+
+  return 0;
 }

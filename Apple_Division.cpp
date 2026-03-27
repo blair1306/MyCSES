@@ -3,6 +3,7 @@
 #else
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <bitset>
 #include <cassert>
 #include <cctype>
@@ -68,7 +69,7 @@ const int MOD = 1e9 + 7;  // or 998244353
 #ifdef LOCAL
 const int N = 10;  // size for global arrays (if needed)
 #else
-const int N = 100;  // size for global arrays (if needed)
+const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
 int main()
@@ -79,55 +80,31 @@ int main()
 
   int n;
   cin >> n;
-
-  // int grid[N][N];
-  vvi grid(n, vi(n, -1));
+  vll apple(n);
+  ll n_sum = 0;
+  ll min_weight_diff = LLONG_MAX;
 
   for (int i = 0; i < n; i++) {
-    grid[i][i] = 0;
+    ll a;
+    cin >> a;
+    a *= 4;
+    apple[i] = a;
+    n_sum += a;
   }
 
-  for (int col = 0; col < n; col++) {
-    for (int row = 0; row < col; row++) {
-      if (row == 0) {
-        grid[row][col] = col;
-        continue;
-      }
+  n_sum /= 2;
 
-      vi used(100);
-      for (int x = 0; x < col; x++) {
-        // x = 2, row = 1
-        if (x == row) continue;
-        if (x < row)
-          used[grid[x][row]] = 1;
-        else
-          used[grid[row][x]] = 1;
-      }
-
-      for (int y = 0; y < row; y++) {
-        used[grid[y][col]] = 1;
-      }
-
-      dbg(row, col);
-      dbg(used);
-
-      int smallest = 0;
-      for (int i = 1; i < col; i++) {
-        if (used[i] == 0) {
-          smallest = i;
-          break;
-        }
-      }
-
-      grid[row][col] = smallest;
-      grid[col][row] = smallest;
+  for (int mask = 1; mask < (1 << n); mask++) {
+    ll cur_sum = 0;
+    for (int b = 0; b < n; b++) {
+      if (mask & (1 << b)) cur_sum += apple[b];
     }
+    ll diff = abs(n_sum - cur_sum);
+    min_weight_diff = min(min_weight_diff, diff);
+    dbg(diff);
   }
 
-  for (int row = 0; row < n; row++) {
-    for (int n : grid[row]) cout << n << " ";
-    cout << endl;
-  }
+  cout << min_weight_diff / 2 << endl;
 
-  for (int i = 1; i < n; i++) return 0;
+  return 0;
 }

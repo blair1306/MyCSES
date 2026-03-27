@@ -68,8 +68,11 @@ const int MOD = 1e9 + 7;  // or 998244353
 #ifdef LOCAL
 const int N = 10;  // size for global arrays (if needed)
 #else
-const int N = 100;  // size for global arrays (if needed)
+const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
+
+int nxt[N];
+int pre[N];
 
 int main()
 {
@@ -79,55 +82,23 @@ int main()
 
   int n;
   cin >> n;
+  for (int i = 1; i <= n; i++) {
+    nxt[i] = i + 1;
+    pre[i] = i - 1;
+  }
+  nxt[0] = 1;
+  nxt[n] = 1;
+  pre[1] = n;
 
-  // int grid[N][N];
-  vvi grid(n, vi(n, -1));
+  dbg(pre, nxt);
 
-  for (int i = 0; i < n; i++) {
-    grid[i][i] = 0;
+  int p = 0;
+  while (n--) {
+    p = nxt[nxt[p]];
+    cout << p << " ";
+    nxt[pre[p]] = nxt[p];
+    pre[nxt[p]] = pre[p];
   }
 
-  for (int col = 0; col < n; col++) {
-    for (int row = 0; row < col; row++) {
-      if (row == 0) {
-        grid[row][col] = col;
-        continue;
-      }
-
-      vi used(100);
-      for (int x = 0; x < col; x++) {
-        // x = 2, row = 1
-        if (x == row) continue;
-        if (x < row)
-          used[grid[x][row]] = 1;
-        else
-          used[grid[row][x]] = 1;
-      }
-
-      for (int y = 0; y < row; y++) {
-        used[grid[y][col]] = 1;
-      }
-
-      dbg(row, col);
-      dbg(used);
-
-      int smallest = 0;
-      for (int i = 1; i < col; i++) {
-        if (used[i] == 0) {
-          smallest = i;
-          break;
-        }
-      }
-
-      grid[row][col] = smallest;
-      grid[col][row] = smallest;
-    }
-  }
-
-  for (int row = 0; row < n; row++) {
-    for (int n : grid[row]) cout << n << " ";
-    cout << endl;
-  }
-
-  for (int i = 1; i < n; i++) return 0;
+  return 0;
 }

@@ -68,7 +68,7 @@ const int MOD = 1e9 + 7;  // or 998244353
 #ifdef LOCAL
 const int N = 10;  // size for global arrays (if needed)
 #else
-const int N = 100;  // size for global arrays (if needed)
+const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
 int main()
@@ -77,57 +77,27 @@ int main()
   std::ios_base::sync_with_stdio(false);
   std::cin.tie(NULL);
 
+  /*
+  -1 3 -2 5 3 -5 2 2
+  -1 2  0 5 8  3 5 7
+  -1 3  1 6 9  4 6 8
+
+  */
+
   int n;
   cin >> n;
 
-  // int grid[N][N];
-  vvi grid(n, vi(n, -1));
-
-  for (int i = 0; i < n; i++) {
-    grid[i][i] = 0;
+  ll prev_sum = 0;
+  ll max_sub_sum = -LINF;
+  while (n--) {
+    int num;
+    cin >> num;
+    prev_sum += num;
+    max_sub_sum = max(max_sub_sum, prev_sum);
+    if (prev_sum < 0) prev_sum = 0;
   }
 
-  for (int col = 0; col < n; col++) {
-    for (int row = 0; row < col; row++) {
-      if (row == 0) {
-        grid[row][col] = col;
-        continue;
-      }
+  cout << max_sub_sum << endl;
 
-      vi used(100);
-      for (int x = 0; x < col; x++) {
-        // x = 2, row = 1
-        if (x == row) continue;
-        if (x < row)
-          used[grid[x][row]] = 1;
-        else
-          used[grid[row][x]] = 1;
-      }
-
-      for (int y = 0; y < row; y++) {
-        used[grid[y][col]] = 1;
-      }
-
-      dbg(row, col);
-      dbg(used);
-
-      int smallest = 0;
-      for (int i = 1; i < col; i++) {
-        if (used[i] == 0) {
-          smallest = i;
-          break;
-        }
-      }
-
-      grid[row][col] = smallest;
-      grid[col][row] = smallest;
-    }
-  }
-
-  for (int row = 0; row < n; row++) {
-    for (int n : grid[row]) cout << n << " ";
-    cout << endl;
-  }
-
-  for (int i = 1; i < n; i++) return 0;
+  return 0;
 }
