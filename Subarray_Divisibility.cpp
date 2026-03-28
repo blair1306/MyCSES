@@ -80,21 +80,16 @@ int main()
   int n;
   cin >> n;
   ll pref_sum = 0;
-  map<int, ll> freq;
+  vector<ll> freq(n);
   freq[0] = 1;
   ll ans = 0;
 
   for (int i = 0; i < n; i++) {
     int a;
     cin >> a;
-    pref_sum = (pref_sum + a) % n;
-    if (pref_sum >= 0) {
-      ans += freq[pref_sum];
-      if (pref_sum > 0) ans += freq[pref_sum - n];
-    } else {
-      ans += freq[pref_sum];
-      ans += freq[n + pref_sum];
-    }
+    pref_sum += a;
+    pref_sum = (pref_sum % n + n) % n;
+    ans += freq[pref_sum];
     freq[pref_sum]++;
   }
 
