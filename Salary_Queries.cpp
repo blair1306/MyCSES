@@ -73,36 +73,31 @@ const int N = 2e5 + 5;  // size for global arrays (if needed)
 
 struct Fenwick {
   vi bit;
-  Fenwick(int n) : bit(n + 1)
+  explicit Fenwick(int n) : bit(n + 1)
   {
   }
 
-  void set(int k, int dt)
+  void add(int k, int dt)
   {
-    k += 1;
-    for (; k < bit.size(); k += k & -k) {
+    for (++k; k < (int)bit.size(); k += k & -k) {
       bit[k] += dt;
     }
   }
 
-  int query(int a, int b)
+  int sum(int k) const
   {
-    int ans = query(b);
-    if (a > 0) ans -= query(a - 1);
-
-    return ans;
-  }
-
-  int query(int k)
-  {
-    int cnt = 0;
-    k += 1;
-    for (; k > 0; k -= k & -k) {
-      cnt += bit[k];
+    int res = 0;
+    for (++k; k > 0; k -= k & -k) {
+      res += bit[k];
     }
 
-    return cnt;
+    return res;
   }
+};
+
+struct Query {
+  char type;
+  int a, b;
 };
 
 int main()
@@ -114,62 +109,48 @@ int main()
   int n, q;
   cin >> n >> q;
 
-  vi emp(n);
-  vi comp;
-  vector<array<int, 3>> query;
+  vi salary(n);
+  vi coords;
+  vector<Query> query;
   for (int i = 0; i < n; i++) {
-    cin >> emp[i];
-    comp.push_back(emp[i]);
+    cin >> salary[i];
+    coords.push_back(salary[i]);
   }
 
   while (q--) {
-    char c;
-    cin >> c;
-    if (c == '!') {
-      int k, x;
-      cin >> k >> x;
-      comp.push_back(x);
-      query.push_back({1, k, x});
-    } else {
-      int a, b;
-      cin >> a >> b;
-      comp.push_back(a);
-      comp.push_back(b);
-      query.push_back({0, a, b});
-    }
+    char type;
+    int a, b;
+    cin >> type >> a >> b;
+    query.push_back({type, a, b});
+
+    if (type == '!') coords.push_back(b);
   }
 
-  sort(all(comp));
-  comp.erase(unique(all(comp)), comp.end());
+  sort(all(coords));
+  coords.erase(unique(all(coords)), coords.end());
 
-  dbg(comp);
+  dbg(coords);
 
-  Fenwick fenw(comp.size());
-  for (auto& e : emp) {
-    e = lower_bound(all(comp), e) - comp.begin();
-    fenw.set(e, 1);
+  auto id = [&](int x) { return (int)(lower_bound(all(coords), x) - coords.begin()); };
+
+  Fenwick fenw(coords.size());
+  for (int x : salary) {
+    fenw.add(id(x), 1);
   }
-  dbg(emp);
-  dbg(fenw.bit);
-  for (auto& qr : query) {
-    qr[2] = lower_bound(all(comp), qr[2]) - comp.begin();
-    if (qr[0] == 0) {
-      qr[1] = lower_bound(all(comp), qr[1]) - comp.begin();
-    } else
-      qr[1]--;
 
-    if (qr[0] == 1) {
-      auto [t, k, x] = qr;
-      int before, after;
-      before = emp[k];
-      after = x;
-      emp[k] = after;
-      fenw.set(before, -1);
-      fenw.set(after, 1);
-      dbg(fenw.bit);
+  auto count_leq = [&](int x) {
+    int pos = int(upper_bound(all(coords), x) - coords.begin()) - 1;
+    return fenw.sum(pos);
+  };
+
+  for (auto [type, a, b] : query) {
+    if (type == '!') {
+      int k = a - 1;
+      fenw.add(id(salary[k]), -1);
+      salary[k] = b;
+      fenw.add(id(salary[k]), +1);
     } else {
-      auto [t, a, b] = qr;
-      cout << fenw.query(a, b) << endl;
+      cout << count_leq(b) - count_leq(a - 1) << endl;
     }
   }
 
