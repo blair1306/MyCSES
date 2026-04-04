@@ -88,7 +88,7 @@ struct Fenwick {
   int query(int a, int b)
   {
     int ans = query(b);
-    if (a > 0) ans - query(a - 1);
+    if (a > 0) ans -= query(a - 1);
 
     return ans;
   }
@@ -162,8 +162,8 @@ int main()
       auto [t, k, x] = qr;
       int before, after;
       before = emp[k];
-      emp[k] = after;
       after = x;
+      emp[k] = after;
       fenw.set(before, -1);
       fenw.set(after, 1);
       dbg(fenw.bit);
