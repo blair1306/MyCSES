@@ -79,38 +79,42 @@ template <class T>
 class SegmentTree {
 private:
   // const T DEFAULT = std::numeric_limits<T>().max();
-  const T DEFAULT = {0, 0};
+  const T ID = {0, 0};
 
   int len;
   vector<T> tree;
 
 public:
-  explicit SegmentTree(int len) : len(len), tree(len * 2, DEFAULT)
+  explicit SegmentTree(int len) : len(len), tree(len * 2, ID)
   {
+  }
+
+  T conquer(T l, T r) const
+  {
+    return {l.sum + r.sum, max(l.maxPref, l.sum + r.maxPref)};
   }
 
   void set(int k, T val)
   {
     k += len;
     tree[k] = val;
-    for (; k > 1; k /= 2) {
-      T l = tree[k / 2 * 2], r = tree[k / 2 * 2 + 1];
-      tree[k / 2] = {l.sum + r.sum, max(l.maxPref, l.sum + r.maxPref)};
+    for (k /= 2; k >= 1; k /= 2) {
+      tree[k] = conquer(tree[2 * k], tree[2 * k + 1]);
     }
   }
 
-  ll range_query(int start, int end)
+  ll range_query(int l, int r)
   {
-    ll ret = 0;
-    for (start += len, end += len; start < end; start /= 2, end /= 2) {
-      if (start % 2 == 1) {
-        ret = std::max(ret, tree[start++].maxPref);
+    T resL = ID, resR = ID;
+    for (l += len, r += len; l < r; l /= 2, r /= 2) {
+      if (l % 2 == 1) {
+        resL = conquer(resL, tree[l++]);
       }
-      if (end % 2 == 1) {
-        ret = std::max(ret, tree[--end].maxPref);
+      if (r % 2 == 1) {
+        resR = conquer(tree[--r], resR);
       }
     }
-    return ret;
+    return conquer(resL, resR).maxPref;
   }
 };
 
@@ -143,7 +147,7 @@ int main()
       int k = a, x = b;
       segtree.set(--k, {b, max(0, b)});
     } else {
-      cout << segtree.range_query(a, b) << endl;
+      cout << segtree.range_query(a - 1, b) << endl;
     }
   }
 
