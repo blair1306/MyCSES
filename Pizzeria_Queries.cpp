@@ -75,7 +75,7 @@ template <typename T>
 struct SegTree {
   int n;
   vector<T> tree;
-  T ID = 0;
+  T ID = LINF;
 
   SegTree(int _n) : n(_n), tree(4 * _n, ID)
   {
@@ -83,7 +83,7 @@ struct SegTree {
 
   T combine(T a, T b)
   {
-    return max(a, b);
+    return min(a, b);
   }
 
   void update(int v, int tl, int tr, int pos, T new_val)
@@ -147,7 +147,7 @@ int main()
       segR.update(k - 1, x + k);
     } else {
       cin >> k;
-      cout << max(segL.query(0, k - 1) + k, segR.query(k, n - 1) - k) << endl;
+      cout << min(segL.query(0, k - 1) + k, segR.query(k, n - 1) - k) << endl;
     }
   }
 
