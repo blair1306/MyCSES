@@ -83,13 +83,13 @@ struct Query {
 
 struct Fenwick {
   vi bit;
-  Fenwick(int n) : bit(n + 1)
+  Fenwick(int n) : bit(n + 2)
   {
   }
 
   void update(int k, int v)
   {
-    for (k += 1; k < bit.size(); k += k & -k) {
+    for (k += 1; k < (int)bit.size(); k += k & -k) {
       bit[k] += v;
     }
   }
@@ -107,8 +107,8 @@ struct Fenwick {
   int count(int a, int b)
   {
     int ret = 0;
-    ret += count(a);
-    if (b > 0) ret -= count(b);
+    ret += count(b);
+    if (a > 0) ret -= count(a);
 
     return ret;
   }
@@ -158,13 +158,13 @@ int main()
   vi ans(q);
 
   for (auto qr : query) {
-    for (; activated < qr.l - 1; activated++) {
+    for (; activated < qr.l; activated++) {
       for (auto bd : group[activated]) {
         fenw.update(bd, 1);
       }
     }
 
-    ans[qr.id] = fenw.count(qr.l, qr.r);
+    ans[qr.id] = fenw.count(qr.l - 1, qr.r);
   }
   dbg(fenw.bit);
 
