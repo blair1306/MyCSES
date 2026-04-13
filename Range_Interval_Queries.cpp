@@ -73,8 +73,17 @@ const int N = 2e5 + 5;  // size for global arrays (if needed)
 
 class MergeSegmentTree {
 public:
-  MergeSegmentTree(const vi& arr) : n(arr.size()), tree(4 * n)
+  MergeSegmentTree(const vi& arr) : n(arr.size()), offset(4 * n + 1)
   {
+    vi sizes(4 * n + 1, 0);
+    computeSizes(sizes, 1, 0, n - 1);
+
+    offset[0] = 0;
+    for (int i = 1; i <= 4 * n; i++) {
+      offset[i] = offset[i - 1] + sizes[i - 1];
+    }
+    tree.resize(offset[4 * n]);
+
     build(arr, 1, 0, n - 1);
   }
 
@@ -83,15 +92,41 @@ public:
     return query(1, 0, n - 1, l, r, a, b);
   }
 
-private:
   int n;
-  vvi tree;
+  vi offset;
+  vi tree;
+
+private:
+  int* begin(int at)
+  {
+    return &tree[offset[at]];
+  }
+
+  int* end(int at)
+  {
+    return &tree[offset[at + 1]];
+  }
+
+  int size(int at)
+  {
+    return offset[at + 1] - offset[at];
+  }
+
+  void computeSizes(vi& sizes, int at, int al, int ar)
+  {
+    sizes[at] = ar - al + 1;
+    if (ar == al) return;
+
+    int mid = (al + ar) / 2;
+    computeSizes(sizes, 2 * at, al, mid);
+    computeSizes(sizes, 2 * at + 1, mid + 1, ar);
+  }
 
   int query(int at, int al, int ar, int l, int r, int a, int b)
   {
     if (r < al || ar < l) return 0;
     if (l <= al && ar <= r) {
-      return upper_bound(all(tree[at]), b) - lower_bound(all(tree[at]), a);
+      return upper_bound(begin(at), end(at), b) - lower_bound(begin(at), end(at), a);
     }
 
     int mid = (al + ar) / 2;
@@ -104,7 +139,7 @@ private:
   void build(const vi& arr, int at, int al, int ar)
   {
     if (al == ar) {
-      tree[at].push_back(arr[al]);
+      tree[offset[at]] = arr[al];
       return;
     }
 
@@ -112,7 +147,7 @@ private:
     build(arr, 2 * at, al, mid);
     build(arr, 2 * at + 1, mid + 1, ar);
 
-    merge(all(tree[2 * at]), all(tree[2 * at + 1]), back_inserter(tree[at]));
+    merge(begin(2 * at), end(2 * at), begin(2 * at + 1), end(2 * at + 1), begin(at));
   }
 };
 
