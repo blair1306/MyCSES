@@ -74,7 +74,7 @@ const int N = 2e5 + 5;  // size for global arrays (if needed)
 class SegmentTree {
 public:
   struct Node {
-    ll sum, prev, suf, ans;
+    ll sum, prev, suf, ans;  // ans is the ans in this node(range)
   };
   SegmentTree(const vi& arr) : n(arr.size()), tree(4 * n)
   {
@@ -87,10 +87,9 @@ public:
 
   ll query()
   {
-    ll ans = 0;
     auto node = tree[1];
 
-    return node.ans;
+    return max(0ll, node.ans);
   }
 
 private:
@@ -120,7 +119,7 @@ private:
     node.sum = l.sum + r.sum;
     node.prev = max(l.prev, l.sum + r.prev);
     node.suf = max(r.suf, r.sum + l.suf);
-    node.ans = max({node.sum, l.sum, r.sum, l.suf + r.prev});
+    node.ans = max({l.ans, r.ans, l.suf + r.prev});
 
     return node;
   }
@@ -129,7 +128,7 @@ private:
   {
     if (al == ar) {
       auto& node = tree[at];
-      node.sum = node.prev = node.suf = arr[al];
+      node.sum = node.prev = node.suf = node.ans = arr[al];
       return;
     }
 
