@@ -123,7 +123,7 @@ int main()
 
   int n, q;
   cin >> n >> q;
-  unordered_map<int, int> prevValueMap;
+  map<int, int> prevValueMap;
   vi prev(n);
 
   for (int i = 0; i < n; i++) {
