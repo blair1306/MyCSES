@@ -79,7 +79,7 @@ public:
 
   void set(int k, int dt)
   {
-    for (k += 1; k < bit.size(); k += k & -k) {
+    for (k += 1; k < (int)bit.size(); k += k & -k) {
       bit[k] += dt;
     }
   }
@@ -157,13 +157,22 @@ int main()
     int r = b;
     for (; sweep <= r; sweep++) {
       bit.set(sweep, 1);
-      if (prev[sweep] > 0) bit.set(prev[sweep], -1);
+      if (prev[sweep] >= 0) bit.set(prev[sweep], -1);
     }
 
     dbg(bit.bit);
 
     ans[id] = bit.query(a, b);
   }
+
+  /*
+  3, 3
+  1, 2
+  prev[0] = -1, prev[1] = 0
+  sweep = 0, bit.set(0, 1)
+  sweep = 1, bit.set(1, 1), bit.set(0, -1)
+  Ha, we didn't set bit.set(**0**, -1), case closed
+  */
 
   for (auto a : ans) cout << a << endl;
 
