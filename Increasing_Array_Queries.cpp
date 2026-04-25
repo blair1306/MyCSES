@@ -161,7 +161,9 @@ int main()
     stk.push({i, end, x[i]});
 
     for (auto [a, b, i] : queryByA[i]) {
-      ans[i] = bit.range_sum(a, b);
+      ll runningMax = bit.range_sum(a, b);
+      ll prefSum = xPref[b] - xPref[a - 1];
+      ans[i] = runningMax - prefSum;
     }
   }
 
