@@ -124,7 +124,7 @@ private:
 
   int rangeMax(int at, int al, int ar, int l, int r)
   {
-    if (ar > l || al > r) return 0;
+    if (ar < l || al > r) return 0;
     if (l <= al && ar <= r) return tree[at];
     int mid = (al + ar) / 2;
     int lMax = rangeMax(2 * at, al, mid, l, r);
@@ -143,7 +143,7 @@ int main()
   int n, q;
   cin >> n >> q;
 
-  map<int, set<int>> posOfX;
+  unordered_map<int, set<int>> posOfX;
   vi x(n + 1);
   vi prev(n + 1);
 
@@ -158,25 +158,21 @@ int main()
 
   dbg(prev);
 
-  auto get_neighbor = [&](int k) {
+  auto get_neighbor = [&](int k, int v) {
     int prev = 0, next = 0;
-    auto& S = posOfX[k];
+    auto& S = posOfX[v];
     auto it = S.find(k);
+    /*
+    set: { 2, 5, 8, 11 }
+           ↑              ↑
+        begin()          end()   ← points to "nothing", one past 8
+
+        *begin() == 2   ✅
+        *end()          ❌ UB — dereferencing end() is always undefined behavior*/
     if (it != S.begin()) prev = *(std::prev(it));
-    if (it != S.end()) next = *(std::next(it));
+    if (std::next(it) != S.end()) next = *(std::next(it));
 
     return make_pair(prev, next);
-  };
-
-  auto get_nearest_prev = [&](int k, int v) {
-    int nearest_prev = 0;
-    auto& S = posOfX[v];
-    auto it = S.lower_bound(k);
-    if (it != S.begin()) {
-      nearest_prev = *(std::prev(it));
-    }
-
-    return nearest_prev;
   };
 
   MaxSegmentTree segtree(prev);
@@ -189,17 +185,21 @@ int main()
       cin >> k >> u;
       // update old next to old prev, then update new prev
       int oldX = x[k];
-      auto [oldPrev, oldNext] = get_neighbor(x[k]);
+      if (oldX == u) continue;
+      auto [oldPrev, oldNext] = get_neighbor(k, x[k]);
       if (oldNext != 0) {
-        prev[oldNext] = oldPrev;
         segtree.update(oldNext, oldPrev);
       }
-      auto newNearestPrev = get_nearest_prev(k, u);
-      prev[k] = newNearestPrev;
       x[k] = u;
       posOfX[u].insert(k);
       auto it = posOfX[oldX].find(k);
       posOfX[oldX].erase(it);
+      auto [newPrev, newNext] = get_neighbor(k, x[k]);
+      if (newNext != 0) {
+        segtree.update(newNext, k);
+      }
+
+      segtree.update(k, newPrev);
     } else {
       int a, b;
       cin >> a >> b;
