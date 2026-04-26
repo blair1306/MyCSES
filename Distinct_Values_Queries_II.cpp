@@ -71,146 +71,133 @@ const int N = 10;  // size for global arrays (if needed)
 const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
-class MaxSegmentTree {
-public:
-  explicit MaxSegmentTree(const vi& prev) : n(prev.size()), tree(4 * n)
-  {
-    build(prev, 1, 0, n - 1);
-  };
+// ── Segment tree: range max, point update ────────────────────────────────────
+struct MaxSegTree {
+  int n;
+  vector<int> tree;
 
-  void update(int k, int v)
+  MaxSegTree(const vector<int>& a) : n(a.size()), tree(4 * a.size())
   {
-    update(1, 0, n - 1, k, v);
+    build(a, 1, 0, n - 1);
   }
 
-  int rangeMax(int l, int r)
+  void update(int pos, int val)
   {
-    return rangeMax(1, 0, n - 1, l, r);
+    update(1, 0, n - 1, pos, val);
+  }
+  int query(int l, int r)
+  {
+    return query(1, 0, n - 1, l, r);
   }
 
 private:
-  int n;
-  vi tree;
-
-  void build(const vi& arr, int at, int al, int ar)
+  void build(const vector<int>& a, int node, int lo, int hi)
   {
-    if (al == ar) {
-      tree[at] = arr[al];
+    if (lo == hi) {
+      tree[node] = a[lo];
       return;
     }
-
-    int mid = (al + ar) / 2;
-    build(arr, 2 * at, al, mid);
-    build(arr, 2 * at + 1, mid + 1, ar);
-
-    tree[at] = max(tree[2 * at], tree[2 * at + 1]);
+    int mid = (lo + hi) / 2;
+    build(a, 2 * node, lo, mid);
+    build(a, 2 * node + 1, mid + 1, hi);
+    tree[node] = max(tree[2 * node], tree[2 * node + 1]);
   }
 
-  void update(int at, int al, int ar, int k, int v)
+  void update(int node, int lo, int hi, int pos, int val)
   {
-    if (al == ar) {
-      tree[at] = v;
+    if (lo == hi) {
+      tree[node] = val;
       return;
     }
-
-    int mid = (al + ar) / 2;
-    if (k <= mid)
-      update(2 * at, al, mid, k, v);
+    int mid = (lo + hi) / 2;
+    if (pos <= mid)
+      update(2 * node, lo, mid, pos, val);
     else
-      update(2 * at + 1, mid + 1, ar, k, v);
-
-    tree[at] = max(tree[2 * at], tree[2 * at + 1]);
+      update(2 * node + 1, mid + 1, hi, pos, val);
+    tree[node] = max(tree[2 * node], tree[2 * node + 1]);
   }
 
-  int rangeMax(int at, int al, int ar, int l, int r)
+  int query(int node, int lo, int hi, int l, int r)
   {
-    if (ar < l || al > r) return 0;
-    if (l <= al && ar <= r) return tree[at];
-    int mid = (al + ar) / 2;
-    int lMax = rangeMax(2 * at, al, mid, l, r);
-    int rMax = rangeMax(2 * at + 1, mid + 1, ar, l, r);
-
-    return max(lMax, rMax);
+    if (hi < l || lo > r) return 0;
+    if (l <= lo && hi <= r) return tree[node];
+    int mid = (lo + hi) / 2;
+    return max(query(2 * node, lo, mid, l, r), query(2 * node + 1, mid + 1, hi, l, r));
   }
 };
 
+// ── Main ─────────────────────────────────────────────────────────────────────
 int main()
 {
-  // Fast I/O
-  std::ios_base::sync_with_stdio(false);
-  std::cin.tie(NULL);
+  ios_base::sync_with_stdio(false);
+  cin.tie(NULL);
 
   int n, q;
   cin >> n >> q;
 
-  unordered_map<int, set<int>> posOfX;
-  vi x(n + 1);
-  vi prev(n + 1);
+  unordered_map<int, set<int>> positions;  // value → sorted set of indices
+  vector<int> x(n + 1);                    // current array values
+  vector<int> prevOcc(n + 1);              // prevOcc[i] = last index j<i with x[j]==x[i]
 
-  for (int i = 1; i <= n; i++) {
-    int xi;
-    cin >> xi;
-    x[i] = xi;
-    auto& pos = posOfX[xi];
-    prev[i] = pos.empty() ? 0 : *pos.rbegin();
-    pos.insert(i);
-  }
-
-  dbg(prev);
-
-  auto get_neighbor = [&](int k, int v) {
-    int prev = 0, next = 0;
-    auto& S = posOfX[v];
-    auto it = S.find(k);
-    /*
-    set: { 2, 5, 8, 11 }
-           ↑              ↑
-        begin()          end()   ← points to "nothing", one past 8
-
-        *begin() == 2   ✅
-        *end()          ❌ UB — dereferencing end() is always undefined behavior*/
-    if (it != S.begin()) prev = *(std::prev(it));
-    if (std::next(it) != S.end()) next = *(std::next(it));
-
-    return make_pair(prev, next);
+  // ── helpers ──────────────────────────────────────────────────────────────
+  // Returns the nearest index before k that holds value v (0 if none)
+  auto prevOf = [&](int k, int v) -> int {
+    auto& S = positions[v];
+    auto it = S.lower_bound(k);
+    return (it != S.begin()) ? *std::prev(it) : 0;
   };
 
-  MaxSegmentTree segtree(prev);
+  // Returns the nearest index after k that holds value v (0 if none)
+  auto nextOf = [&](int k, int v) -> int {
+    auto& S = positions[v];
+    auto it = S.upper_bound(k);
+    return (it != S.end()) ? *it : 0;
+  };
 
+  // ── build initial prevOcc ─────────────────────────────────────────────
+  for (int i = 1; i <= n; i++) {
+    cin >> x[i];
+    prevOcc[i] = prevOf(i, x[i]);  // before inserting i
+    positions[x[i]].insert(i);
+  }
+
+  MaxSegTree seg(prevOcc);
+
+  // ── queries ───────────────────────────────────────────────────────────
   while (q--) {
-    int t;
-    cin >> t;
-    if (t == 1) {
+    int type;
+    cin >> type;
+
+    if (type == 1) {
       int k, u;
       cin >> k >> u;
-      // update old next to old prev, then update new prev
-      int oldX = x[k];
-      if (oldX == u) continue;
-      auto [oldPrev, oldNext] = get_neighbor(k, x[k]);
-      if (oldNext != 0) {
-        segtree.update(oldNext, oldPrev);
-      }
-      x[k] = u;
-      posOfX[u].insert(k);
-      auto it = posOfX[oldX].find(k);
-      posOfX[oldX].erase(it);
-      auto [newPrev, newNext] = get_neighbor(k, x[k]);
-      if (newNext != 0) {
-        segtree.update(newNext, k);
-      }
+      if (x[k] == u) continue;
 
-      segtree.update(k, newPrev);
+      int oldVal = x[k];
+
+      // 1. oldVal's successor now skips over k → its prev becomes k's prev
+      int oNext = nextOf(k, oldVal);
+      if (oNext) seg.update(oNext, prevOcc[k]);
+
+      // 2. Remove k from old value, insert into new value
+      positions[oldVal].erase(k);
+      positions[u].insert(k);
+      x[k] = u;
+
+      // 3. k's own prev changes to nearest predecessor with value u
+      prevOcc[k] = prevOf(k, u);
+      seg.update(k, prevOcc[k]);
+
+      // 4. u's successor now points back to k instead of k's predecessor
+      int nNext = nextOf(k, u);
+      if (nNext) seg.update(nNext, k);
+
     } else {
       int a, b;
       cin >> a >> b;
-      int nearestPrev = segtree.rangeMax(a, b);
-      if (nearestPrev >= a) {
-        cout << "NO" << endl;
-      } else {
-        cout << "YES" << endl;
-      }
+      // All distinct iff no element in [a,b] has a duplicate within [a,b]
+      // ↔ max(prevOcc[a..b]) < a
+      cout << (seg.query(a, b) < a ? "YES" : "NO") << '\n';
     }
   }
-
-  return 0;
 }
