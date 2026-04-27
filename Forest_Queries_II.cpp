@@ -80,8 +80,8 @@ struct BIT2D {
   void add(int r, int c, int v)
   {
     for (; r < bit.size(); r += r & -r) {
-      for (; c < bit[0].size(); c += c & -c) {
-        bit[r][c] += v;
+      for (int x = c; x < bit[0].size(); x += x & -x) {
+        bit[r][x] += v;
       }
     }
   }
@@ -90,8 +90,8 @@ struct BIT2D {
   {
     int ans = 0;
     for (; r > 0; r -= r & -r) {
-      for (; c > 0; c -= c & -c) {
-        ans += bit[r][c];
+      for (int x = c; x > 0; x -= x & -x) {
+        ans += bit[r][x];
       }
     }
 
@@ -100,7 +100,8 @@ struct BIT2D {
 
   int query(int r1, int c1, int r2, int c2)
   {
-    return query(r2, c2) - query(r2, c1) - query(r1, c2) + query(r1 - 1, c1 - 1);
+    // inclusion-exclusion..
+    return query(r2, c2) - query(r2, c1 - 1) - query(r1 - 1, c2) + query(r1 - 1, c1 - 1);
   }
 };
 
