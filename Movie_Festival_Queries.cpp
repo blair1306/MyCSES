@@ -110,12 +110,17 @@ int main()
 
   for (int l = 1; l < LOG; l++) {
     for (int t = 1; t < MAXT; t++) {
-      up[t][l] = up[up[t - 1][l - 1]][l - 1];
+      /*
+      up[t][l] = take 2^l steps back from t
+      First half: take 2^(l-1) steps back from t → lands at up[t][l-1]
+      Second half: take 2^(l-1) more steps from there
+      */
+      up[t][l] = up[up[t][l - 1]][l - 1];
     }
   }
 
-  // dbg(best);
-  // dbg(up);
+  dbg(best);
+  dbg(up);
 
   while (q--) {
     int a, b;
