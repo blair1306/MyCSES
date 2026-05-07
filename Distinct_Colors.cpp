@@ -83,7 +83,8 @@ void dfs(int u, int p)
     if (colors[v].size() > colors[u].size()) {
       swap(colors[v], colors[u]);
     }
-    for (int c : colors[v]) colors[u].insert(c);
+    // for (int c : colors[v]) colors[u].insert(c);
+    colors[u].merge(colors[v]);
   }
 
   distinct_color[u] = colors[u].size();
