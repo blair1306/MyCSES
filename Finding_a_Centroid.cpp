@@ -72,8 +72,9 @@ const int N = 2e5 + 5;  // size for global arrays (if needed)
 #endif
 
 vi adj[N];
+vi subSize(N);
 
-int getSubTreeSize(int u, int p)
+int getSubTreeSize(int u, int p = -1)
 {
   int treeSize = 1;
   for (int v : adj[u]) {
@@ -81,17 +82,18 @@ int getSubTreeSize(int u, int p)
     treeSize += getSubTreeSize(v, u);
   }
 
+  subSize[u] = treeSize;
   return treeSize;
 }
 
 int n;
 int centroid = 1;
 
-void findCentroid(int u, int p)
+void findCentroid(int u, int p = -1)
 {
   for (int v : adj[u]) {
     if (v == p) continue;
-    if (getSubTreeSize(v, u) * 2 > n) {
+    if (subSize[v] * 2 > n) {
       return findCentroid(v, u);
     }
   }
@@ -113,7 +115,9 @@ int main()
     adj[b].push_back(a);
   }
 
-  findCentroid(1, 0);
+  getSubTreeSize(1);
+
+  findCentroid(1);
   cout << centroid << endl;
 
   return 0;
