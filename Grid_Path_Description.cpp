@@ -68,7 +68,6 @@ const int MOD = 1e9 + 7;  // or 998244353
 const int N = 7;          // size for global arrays (if needed)
 
 int grid[N + 2][N + 2];
-// int vis[N + 2][N + 2][4];
 vector<char> path;
 const int pathMaxSz = (N * N) - 1;
 int ans = 0;
@@ -81,6 +80,19 @@ struct Direction {
 Direction dirs[] = {{'D', 0, 1, 0}, {'U', 0, -1, 1}, {'L', -1, 0, 2}, {'R', 1, 0, 3}};
 string pathDesc;
 
+bool wallSplit(int y, int x)
+{
+  int d = grid[y + 1][x];
+  int u = grid[y - 1][x];
+  int l = grid[y][x - 1];
+  int r = grid[y][x + 1];
+
+  if (d == 1 && u == 1 && l == 0 && r == 0) return true;
+  if (d == 0 && u == 0 && l == 1 && r == 1) return true;
+
+  return false;
+}
+
 void dfs(int y, int x, int d = 0)
 {
   if (grid[y][x] == 1) return;
@@ -89,10 +101,11 @@ void dfs(int y, int x, int d = 0)
     return;
   }
 
-  grid[y][x] = 1;
+  if (wallSplit(y, x)) {
+    return;
+  }
 
-  // if (vis[y][x][d] == 1) return;
-  // vis[y][x][d] = 1;
+  grid[y][x] = 1;
 
   char nextDir = pathDesc[path.size()];
 
